@@ -2,14 +2,38 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@font-face {
+  font-family: "Excon";
+  src: url("./fonts/excon-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("./fonts/poppins-regular-latin-ext.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("./fonts/poppins-regular-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-mono: ui-monospace, "SFMono-Regular", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,72 +73,72 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.985 0.002 90);
+  --foreground: oklch(0.145 0.005 90);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.145 0.005 90);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.145 0.005 90);
+  --primary: oklch(0.75 0.18 80);
+  --primary-foreground: oklch(0.16 0.01 80);
+  --secondary: oklch(0.94 0.03 130);
+  --secondary-foreground: oklch(0.25 0.04 130);
+  --muted: oklch(0.96 0.005 90);
+  --muted-foreground: oklch(0.5 0.01 90);
+  --accent: oklch(0.94 0.03 130);
+  --accent-foreground: oklch(0.25 0.04 130);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --border: oklch(0.9 0.01 90);
+  --input: oklch(0.9 0.01 90);
+  --ring: oklch(0.75 0.18 80);
+  --chart-1: oklch(0.75 0.18 80);
+  --chart-2: oklch(0.65 0.15 130);
+  --chart-3: oklch(0.55 0.12 50);
+  --chart-4: oklch(0.7 0.1 200);
+  --chart-5: oklch(0.6 0.08 300);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.97 0.005 90);
+  --sidebar-foreground: oklch(0.145 0.005 90);
+  --sidebar-primary: oklch(0.75 0.18 80);
+  --sidebar-primary-foreground: oklch(0.16 0.01 80);
+  --sidebar-accent: oklch(0.94 0.03 130);
+  --sidebar-accent-foreground: oklch(0.25 0.04 130);
+  --sidebar-border: oklch(0.9 0.01 90);
+  --sidebar-ring: oklch(0.75 0.18 80);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(0.145 0.005 90);
+  --foreground: oklch(0.96 0.005 90);
+  --card: oklch(0.2 0.008 90);
+  --card-foreground: oklch(0.96 0.005 90);
+  --popover: oklch(0.2 0.008 90);
+  --popover-foreground: oklch(0.96 0.005 90);
+  --primary: oklch(0.78 0.16 80);
+  --primary-foreground: oklch(0.16 0.01 80);
+  --secondary: oklch(0.26 0.015 90);
+  --secondary-foreground: oklch(0.96 0.005 90);
+  --muted: oklch(0.26 0.015 90);
+  --muted-foreground: oklch(0.65 0.01 90);
+  --accent: oklch(0.26 0.015 90);
+  --accent-foreground: oklch(0.96 0.005 90);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.78 0.16 80);
+  --chart-1: oklch(0.78 0.16 80);
+  --chart-2: oklch(0.65 0.15 130);
+  --chart-3: oklch(0.55 0.12 50);
+  --chart-4: oklch(0.7 0.1 200);
+  --chart-5: oklch(0.6 0.08 300);
+  --sidebar: oklch(0.2 0.008 90);
+  --sidebar-foreground: oklch(0.96 0.005 90);
+  --sidebar-primary: oklch(0.78 0.16 80);
+  --sidebar-primary-foreground: oklch(0.96 0.005 90);
+  --sidebar-accent: oklch(0.26 0.015 90);
+  --sidebar-accent-foreground: oklch(0.96 0.005 90);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.78 0.16 80);
 }
 
 @layer base {
@@ -123,8 +147,14 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Poppins", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 400;
   }
-  html {
-    @apply font-sans;
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: "Excon", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
   }
 }
