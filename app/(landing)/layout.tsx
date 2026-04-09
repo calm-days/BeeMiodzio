@@ -3,8 +3,8 @@ import Link from "next/link";
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <header className="border-b border-border">
-        <nav className="flex items-center justify-between px-[5%] py-4">
+      <header className="absolute inset-x-0 top-0 z-40">
+        <nav className="container-page flex items-center justify-between py-4">
           <Link href="/" className="font-heading text-xl font-bold text-primary">
             BeeSharing
           </Link>
@@ -16,7 +16,7 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
         </nav>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
+      <footer className="container-page border-t border-border py-8 text-center text-sm text-muted-foreground">
         © 2025 BeeSharing Poland. Twój ul. Twój miód.
       </footer>
     </>

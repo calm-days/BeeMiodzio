@@ -10,7 +10,7 @@ const plans = [
 
 export default function CennikPage() {
   return (
-    <section className="px-[5%] py-16">
+    <section className="container-page py-16">
       <h1 className="mb-8 text-center font-heading text-4xl font-bold">Cennik</h1>
       <div className="grid gap-6 md:grid-cols-3">
         {plans.map((plan) => (
