@@ -6,6 +6,7 @@ import { BeeTrail } from "@/components/bee-trail";
 import { AnimatedHeading } from "@/components/animated-heading";
 import { FaqItem } from "@/components/faq-item";
 import { HeroConfigurator } from "@/components/hero-configurator";
+import { TimelineSection } from "@/components/timeline-section";
 
 
 const timelineSteps = [
@@ -235,25 +236,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Co i kiedy otrzymasz — timeline */}
-        <section className="container-page py-24">
-          <div className="">
-            <h2 className="mb-10 font-heading text-3xl tracking-tight md:text-4xl">
-              Co i kiedy otrzymasz
-            </h2>
-            <div className="relative space-y-8 border-l-2 border-border pl-8">
-              {timelineSteps.map((step) => (
-                <div key={step.label} className="relative">
-                  <div className="absolute -left-[calc(2rem+5px)] top-1.5 size-2.5 rounded-full bg-foreground" />
-                  <p className="mb-1 text-sm font-semibold uppercase tracking-wider">
-                    {step.label}
-                  </p>
-                  <p className="text-muted-foreground">{step.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Co i kiedy otrzymasz — scroll-driven polaroid cards */}
+        <TimelineSection steps={timelineSteps} />
 
         {/* Podarować pasiekę */}
         <section className="container-page py-24">
