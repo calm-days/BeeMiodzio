@@ -69,7 +69,7 @@ export function TimelineSection({ steps }: Props) {
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {steps.map((step, i) => (
-              <div key={step.label} className="bg-white p-5">
+              <div key={step.label} className="rounded-2xl bg-white p-5">
                 <div className="mb-3 flex items-center gap-3">
                   <span className="bg-[#F3BB11] px-2 py-0.5 text-xs font-bold text-white">
                     {String(i + 1).padStart(2, "0")}
@@ -141,7 +141,7 @@ export function TimelineSection({ steps }: Props) {
                   padding: `${config.cardPadding}px`,
                   transform: `rotate(${rotations[i % rotations.length]}deg)`,
                 }}
-                className="shrink-0 bg-white shadow-2xl"
+                className="shrink-0 rounded-2xl bg-white shadow-2xl"
               >
                 <h3
                   className="mb-3 tracking-wide text-neutral-900 uppercase"

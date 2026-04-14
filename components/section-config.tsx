@@ -112,6 +112,104 @@ export const defaultTimelineConfig: TimelineConfig = {
 };
 
 /* ────────────────────────────────────────────── */
+/*  Heading Config (AnimatedHeading)               */
+/* ────────────────────────────────────────────── */
+
+export interface HeadingConfig {
+  duration: number;
+  stagger: number;
+  mediaDelay: number;
+  mediaDuration: number;
+  mediaW: number;
+  mediaH: number;
+  mediaGap: number;
+  mediaRadius: number;
+  wordGap: number;
+  marginBottom: number;
+  scale: number;
+  lineHeight: number;
+  stiffness: number;
+  damping: number;
+  mass: number;
+}
+
+export const defaultHeadingConfig: HeadingConfig = {
+  duration: 1,
+  stagger: 0.08,
+  mediaDelay: 0.65,
+  mediaDuration: 0.5,
+  mediaW: 2.8,
+  mediaH: 0.85,
+  mediaGap: 0.2,
+  mediaRadius: 1.05,
+  wordGap: 0.17,
+  marginBottom: 2,
+  scale: 7.25,
+  lineHeight: 0.9,
+  stiffness: 110,
+  damping: 20,
+  mass: 1,
+};
+
+/* ────────────────────────────────────────────── */
+/*  Steps Config (Jak to działa)                   */
+/* ────────────────────────────────────────────── */
+
+export interface StepsConfig {
+  rowGap: number;       // px — vertical space between rows
+  imageWidth: number;   // % — image share of row width on desktop
+  innerGap: number;     // px — horizontal gap between image and text
+  imageRadius: number;  // px — border radius of image
+  imageRatio: number;   // aspect ratio as width/height (e.g. 1.33 = 4:3)
+  titleSize: number;    // px
+  bodySize: number;     // px
+  numberSize: number;   // px — number badge size
+}
+
+export const defaultStepsConfig: StepsConfig = {
+  rowGap: 117,
+  imageWidth: 41,
+  innerGap: 48,
+  imageRadius: 16,
+  imageRatio: 1.1,
+  titleSize: 29,
+  bodySize: 20,
+  numberSize: 39,
+};
+
+/* ────────────────────────────────────────────── */
+/*  Prezent Config (Fanned gift cards)             */
+/* ────────────────────────────────────────────── */
+
+export interface PrezentConfig {
+  rotation: number;          // ° — side card tilt
+  overlap: number;           // px — negative margin for card overlap
+  verticalOffset: number;    // px — vertical stagger (center up, sides down)
+  horizontalOffset: number;  // px — side cards horizontal shift outward
+  sideWidth: number;         // px — side card width
+  centerWidth: number;       // px — center card width
+  cardPadding: number;       // px
+  cardRadius: number;        // px
+  titleSize: number;         // px
+  bodySize: number;          // px
+  imageRatio: number;        // width/height
+}
+
+export const defaultPrezentConfig: PrezentConfig = {
+  rotation: 9.5,
+  overlap: 11,
+  verticalOffset: 27,
+  horizontalOffset: 12,
+  sideWidth: 329,
+  centerWidth: 361,
+  cardPadding: 22,
+  cardRadius: 16,
+  titleSize: 19,
+  bodySize: 15,
+  imageRatio: 2,
+};
+
+/* ────────────────────────────────────────────── */
 /*  Context                                        */
 /* ────────────────────────────────────────────── */
 
@@ -120,6 +218,12 @@ interface ConfigCtx {
   setHero: Dispatch<SetStateAction<HeroConfig>>;
   timeline: TimelineConfig;
   setTimeline: Dispatch<SetStateAction<TimelineConfig>>;
+  heading: HeadingConfig;
+  setHeading: Dispatch<SetStateAction<HeadingConfig>>;
+  steps: StepsConfig;
+  setSteps: Dispatch<SetStateAction<StepsConfig>>;
+  prezent: PrezentConfig;
+  setPrezent: Dispatch<SetStateAction<PrezentConfig>>;
 }
 
 const Ctx = createContext<ConfigCtx | null>(null);
@@ -134,6 +238,24 @@ export function useTimelineConfig() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("Wrap with SectionConfigProvider");
   return [ctx.timeline, ctx.setTimeline] as const;
+}
+
+export function useHeadingConfig() {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("Wrap with SectionConfigProvider");
+  return [ctx.heading, ctx.setHeading] as const;
+}
+
+export function useStepsConfig() {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("Wrap with SectionConfigProvider");
+  return [ctx.steps, ctx.setSteps] as const;
+}
+
+export function usePrezentConfig() {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("Wrap with SectionConfigProvider");
+  return [ctx.prezent, ctx.setPrezent] as const;
 }
 
 /* ────────────────────────────────────────────── */
@@ -183,31 +305,49 @@ function Slider({
 /*  Settings Panel                                 */
 /* ────────────────────────────────────────────── */
 
-type Section = "hero" | "timeline";
+type Section = "hero" | "heading" | "steps" | "timeline" | "prezent";
 type HeroTab = "heading" | "buttons" | "bzz" | "section" | "mobile";
 type TimelineTab = "text" | "cards" | "type";
+type HeadingTab = "type" | "media" | "timing" | "spring";
+type StepsTab = "layout" | "type";
+type PrezentTab = "layout" | "type";
 
 function SettingsPanel() {
   const [hero, setHero] = useHeroConfig();
   const [timeline, setTimeline] = useTimelineConfig();
+  const [heading, setHeading] = useHeadingConfig();
+  const [steps, setSteps] = useStepsConfig();
+  const [prezent, setPrezent] = usePrezentConfig();
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<Section>("hero");
   const [heroTab, setHeroTab] = useState<HeroTab>("heading");
   const [timelineTab, setTimelineTab] = useState<TimelineTab>("text");
+  const [headingTab, setHeadingTab] = useState<HeadingTab>("type");
+  const [stepsTab, setStepsTab] = useState<StepsTab>("layout");
+  const [prezentTab, setPrezentTab] = useState<PrezentTab>("layout");
 
   const setH = <K extends keyof HeroConfig>(key: K, v: HeroConfig[K]) =>
     setHero((prev) => ({ ...prev, [key]: v }));
   const setT = <K extends keyof TimelineConfig>(key: K, v: TimelineConfig[K]) =>
     setTimeline((prev) => ({ ...prev, [key]: v }));
+  const setHd = <K extends keyof HeadingConfig>(key: K, v: HeadingConfig[K]) =>
+    setHeading((prev) => ({ ...prev, [key]: v }));
+  const setSt = <K extends keyof StepsConfig>(key: K, v: StepsConfig[K]) =>
+    setSteps((prev) => ({ ...prev, [key]: v }));
+  const setPr = <K extends keyof PrezentConfig>(key: K, v: PrezentConfig[K]) =>
+    setPrezent((prev) => ({ ...prev, [key]: v }));
 
+  const configMap = { hero, heading, steps, timeline, prezent } as const;
   const copyConfig = () => {
-    const data = section === "hero" ? hero : timeline;
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    navigator.clipboard.writeText(JSON.stringify(configMap[section], null, 2));
   };
 
   const resetConfig = () => {
     if (section === "hero") setHero(defaultHeroConfig);
-    else setTimeline(defaultTimelineConfig);
+    else if (section === "heading") setHeading(defaultHeadingConfig);
+    else if (section === "steps") setSteps(defaultStepsConfig);
+    else if (section === "timeline") setTimeline(defaultTimelineConfig);
+    else setPrezent(defaultPrezentConfig);
   };
 
   const heroTabs: { id: HeroTab; label: string }[] = [
@@ -245,7 +385,7 @@ function SettingsPanel() {
         <div className="max-h-[calc(100vh-120px)] w-64 overflow-y-auto rounded-xl bg-zinc-900/95 p-3 shadow-2xl backdrop-blur-md">
           {/* Section selector */}
           <div className="mb-3 flex gap-1">
-            {(["hero", "timeline"] as const).map((s) => (
+            {(["hero", "heading", "steps", "timeline", "prezent"] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setSection(s)}
@@ -255,7 +395,7 @@ function SettingsPanel() {
                     : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
                 }`}
               >
-                {s === "hero" ? "Hero" : "Timeline"}
+                {{ hero: "Hero", heading: "H2", steps: "Steps", timeline: "TL", prezent: "Gift" }[s]}
               </button>
             ))}
           </div>
@@ -346,6 +486,91 @@ function SettingsPanel() {
             </>
           )}
 
+          {/* ── Heading controls ── */}
+          {section === "heading" && (
+            <>
+              <div className="mb-3 flex flex-wrap gap-1">
+                {([
+                  { id: "type" as const, label: "Type" },
+                  { id: "media" as const, label: "Media" },
+                  { id: "timing" as const, label: "Time" },
+                  { id: "spring" as const, label: "Spring" },
+                ]).map((t) => (
+                  <button key={t.id} onClick={() => setHeadingTab(t.id)} className={tabBtnCls(headingTab === t.id)}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col gap-3">
+                {headingTab === "type" && (
+                  <>
+                    <Slider label="Scale" value={heading.scale} onChange={(v) => setHd("scale", v)} min={1} max={10} step={0.25} unit="rem" />
+                    <Slider label="Line height" value={heading.lineHeight} onChange={(v) => setHd("lineHeight", v)} min={0.7} max={2} step={0.05} unit="" />
+                    <Slider label="Margin bottom" value={heading.marginBottom} onChange={(v) => setHd("marginBottom", v)} min={0} max={5} step={0.25} unit="rem" />
+                  </>
+                )}
+                {headingTab === "media" && (
+                  <>
+                    <Slider label="Width" value={heading.mediaW} onChange={(v) => setHd("mediaW", v)} min={0.5} max={4} step={0.1} unit="em" />
+                    <Slider label="Height" value={heading.mediaH} onChange={(v) => setHd("mediaH", v)} min={0.3} max={2} step={0.05} unit="em" />
+                    <Slider label="Gap" value={heading.mediaGap} onChange={(v) => setHd("mediaGap", v)} min={0} max={0.5} step={0.01} unit="em" />
+                    <Slider label="Radius" value={heading.mediaRadius} onChange={(v) => setHd("mediaRadius", v)} min={0} max={1.5} step={0.05} unit="rem" />
+                    <Slider label="Word gap" value={heading.wordGap} onChange={(v) => setHd("wordGap", v)} min={0} max={0.5} step={0.01} unit="em" />
+                  </>
+                )}
+                {headingTab === "timing" && (
+                  <>
+                    <Slider label="Duration" value={heading.duration} onChange={(v) => setHd("duration", v)} min={0.1} max={2} step={0.05} unit="s" />
+                    <Slider label="Stagger" value={heading.stagger} onChange={(v) => setHd("stagger", v)} min={0} max={0.5} step={0.01} unit="s" />
+                    <Slider label="Media delay" value={heading.mediaDelay} onChange={(v) => setHd("mediaDelay", v)} min={0} max={2} step={0.05} unit="s" />
+                    <Slider label="Media dur" value={heading.mediaDuration} onChange={(v) => setHd("mediaDuration", v)} min={0.1} max={2} step={0.05} unit="s" />
+                  </>
+                )}
+                {headingTab === "spring" && (
+                  <>
+                    <Slider label="Stiffness" value={heading.stiffness} onChange={(v) => setHd("stiffness", v)} min={20} max={400} step={5} unit="" />
+                    <Slider label="Damping" value={heading.damping} onChange={(v) => setHd("damping", v)} min={5} max={60} step={1} unit="" />
+                    <Slider label="Mass" value={heading.mass} onChange={(v) => setHd("mass", v)} min={0.1} max={5} step={0.1} unit="" />
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* ── Steps controls ── */}
+          {section === "steps" && (
+            <>
+              <div className="mb-3 flex flex-wrap gap-1">
+                {([
+                  { id: "layout" as const, label: "Layout" },
+                  { id: "type" as const, label: "Type" },
+                ]).map((t) => (
+                  <button key={t.id} onClick={() => setStepsTab(t.id)} className={tabBtnCls(stepsTab === t.id)}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col gap-3">
+                {stepsTab === "layout" && (
+                  <>
+                    <Slider label="Row gap" value={steps.rowGap} onChange={(v) => setSt("rowGap", v)} min={0} max={120} />
+                    <Slider label="Image width" value={steps.imageWidth} onChange={(v) => setSt("imageWidth", v)} min={30} max={70} unit="%" />
+                    <Slider label="Inner gap" value={steps.innerGap} onChange={(v) => setSt("innerGap", v)} min={0} max={80} />
+                    <Slider label="Image radius" value={steps.imageRadius} onChange={(v) => setSt("imageRadius", v)} min={0} max={40} />
+                    <Slider label="Image ratio" value={steps.imageRatio} onChange={(v) => setSt("imageRatio", v)} min={0.5} max={2} step={0.01} unit="" />
+                  </>
+                )}
+                {stepsTab === "type" && (
+                  <>
+                    <Slider label="Title size" value={steps.titleSize} onChange={(v) => setSt("titleSize", v)} min={14} max={32} />
+                    <Slider label="Body size" value={steps.bodySize} onChange={(v) => setSt("bodySize", v)} min={12} max={24} />
+                    <Slider label="Number size" value={steps.numberSize} onChange={(v) => setSt("numberSize", v)} min={20} max={56} />
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
           {/* ── Timeline controls ── */}
           {section === "timeline" && (
             <>
@@ -382,6 +607,43 @@ function SettingsPanel() {
               </div>
             </>
           )}
+
+          {/* ── Prezent controls ── */}
+          {section === "prezent" && (
+            <>
+              <div className="mb-3 flex flex-wrap gap-1">
+                {([
+                  { id: "layout" as const, label: "Layout" },
+                  { id: "type" as const, label: "Type" },
+                ]).map((t) => (
+                  <button key={t.id} onClick={() => setPrezentTab(t.id)} className={tabBtnCls(prezentTab === t.id)}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col gap-3">
+                {prezentTab === "layout" && (
+                  <>
+                    <Slider label="Rotation" value={prezent.rotation} onChange={(v) => setPr("rotation", v)} min={0} max={15} step={0.5} unit="°" />
+                    <Slider label="Overlap" value={prezent.overlap} onChange={(v) => setPr("overlap", v)} min={0} max={80} />
+                    <Slider label="Vertical offset" value={prezent.verticalOffset} onChange={(v) => setPr("verticalOffset", v)} min={0} max={40} />
+                    <Slider label="Horizontal offset" value={prezent.horizontalOffset} onChange={(v) => setPr("horizontalOffset", v)} min={-60} max={60} />
+                    <Slider label="Side width" value={prezent.sideWidth} onChange={(v) => setPr("sideWidth", v)} min={200} max={400} />
+                    <Slider label="Center width" value={prezent.centerWidth} onChange={(v) => setPr("centerWidth", v)} min={240} max={440} />
+                  </>
+                )}
+                {prezentTab === "type" && (
+                  <>
+                    <Slider label="Card padding" value={prezent.cardPadding} onChange={(v) => setPr("cardPadding", v)} min={8} max={48} />
+                    <Slider label="Card radius" value={prezent.cardRadius} onChange={(v) => setPr("cardRadius", v)} min={0} max={32} />
+                    <Slider label="Title size" value={prezent.titleSize} onChange={(v) => setPr("titleSize", v)} min={12} max={28} />
+                    <Slider label="Body size" value={prezent.bodySize} onChange={(v) => setPr("bodySize", v)} min={10} max={22} />
+                    <Slider label="Image ratio" value={prezent.imageRatio} onChange={(v) => setPr("imageRatio", v)} min={0.5} max={2} step={0.01} unit="" />
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -395,9 +657,12 @@ function SettingsPanel() {
 export function SectionConfigProvider({ children }: { children: ReactNode }) {
   const [hero, setHero] = useState<HeroConfig>(defaultHeroConfig);
   const [timeline, setTimeline] = useState<TimelineConfig>(defaultTimelineConfig);
+  const [heading, setHeading] = useState<HeadingConfig>(defaultHeadingConfig);
+  const [steps, setSteps] = useState<StepsConfig>(defaultStepsConfig);
+  const [prezent, setPrezent] = useState<PrezentConfig>(defaultPrezentConfig);
 
   return (
-    <Ctx.Provider value={{ hero, setHero, timeline, setTimeline }}>
+    <Ctx.Provider value={{ hero, setHero, timeline, setTimeline, heading, setHeading, steps, setSteps, prezent, setPrezent }}>
       {children}
       <SettingsPanel />
     </Ctx.Provider>

@@ -218,8 +218,8 @@ export function BeeTrail() {
         Math.atan2(ptB.y - ptA.y, ptB.x - ptA.x) * (180 / Math.PI);
 
       const goingLeft = Math.abs(rawAngle) > 90;
-      // After the turn: lock rotation to 0 and keep facing left
-      const angle = p > 0.5 ? 0 : (goingLeft ? rawAngle - 180 : rawAngle);
+      // Rotation disabled — bee stays upright, only flips direction
+      const angle = 0;
       const flip = p > 0.5 ? true : goingLeft;
 
       setPos({ x: pt.x, y: pt.y, angle, flip });
@@ -330,7 +330,6 @@ export function BeeTrail() {
           width: BEE_SIZE,
           height: BEE_SIZE,
           transform: `scaleX(${pos.flip ? -1 : 1}) rotate(${pos.angle}deg)`,
-          transition: "transform 0.3s ease-out",
           willChange: "transform, left, top",
         }}
       >

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
-export function FaqItem({ q, a }: { q: string; a: string }) {
+export function FaqItem({ q, a }: { q: string; a: ReactNode }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -34,7 +34,7 @@ export function FaqItem({ q, a }: { q: string; a: string }) {
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <p className="px-6 pb-6 text-muted-foreground">{a}</p>
+            <div className="px-6 pb-6 text-muted-foreground">{a}</div>
           </motion.div>
         )}
       </AnimatePresence>
