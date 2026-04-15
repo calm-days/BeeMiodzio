@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 import { AnimatedHeading } from "@/components/animated-heading";
 import { FaqItem } from "@/components/faq-item";
 import { HeroConfigurator } from "@/components/hero-configurator";
 import { PrezentSection } from "@/components/prezent-section";
 import { StepsSection } from "@/components/steps-section";
+import { TaryfySection } from "@/components/taryfy-section";
 import { TimelineSection } from "@/components/timeline-section";
 
 /* ─── Jak to dziala ─── */
@@ -307,73 +307,7 @@ export default function HomePage() {
         <PrezentSection />
 
         {/* Taryfy */}
-        <section className="container-page py-24">
-          <h2 className="mb-12 text-center font-heading text-3xl tracking-tight md:text-4xl">
-            Taryfy
-          </h2>
-
-          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`flex flex-col rounded-2xl border p-8 ${
-                  plan.highlighted
-                    ? "border-primary bg-primary/5"
-                    : "bg-card"
-                }`}
-              >
-                <h3 className="font-heading text-2xl tracking-tight">
-                  {plan.name}
-                </h3>
-                {plan.subtitle && (
-                  <p className="text-sm text-muted-foreground">
-                    {plan.subtitle}
-                  </p>
-                )}
-                <p className="mt-2 text-3xl font-bold">
-                  {plan.price}{" "}
-                  <span className="text-lg font-normal text-muted-foreground">
-                    zł
-                  </span>
-                </p>
-                <p className="mb-6 text-xs text-muted-foreground">
-                  raty przez Klarnę &middot; dalej {plan.renewal}
-                </p>
-                <p className="mb-4 font-medium">{plan.honey}</p>
-                <ul className="mb-6 flex-1 space-y-2">
-                  {plan.features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-start gap-2 text-sm text-muted-foreground"
-                    >
-                      <span className="mt-0.5 text-emerald-500">&#10003;</span>
-                      {f}
-                    </li>
-                  ))}
-                  {plan.extras?.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-start gap-2 text-sm text-muted-foreground"
-                    >
-                      <span className="mt-0.5 text-emerald-500">&#10003;</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  render={<Link href="/checkout" />}
-                  className="w-full"
-                >
-                  Wybieram
-                </Button>
-              </div>
-            ))}
-          </div>
-
-          <p className="mt-8 text-center text-sm text-muted-foreground">
-            Darmowa dostawa InPost w 1&ndash;3 dni.
-          </p>
-        </section>
+        <TaryfySection plans={plans} />
 
         {/* FAQ */}
         <section className="container-page py-24">

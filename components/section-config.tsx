@@ -143,7 +143,7 @@ export const defaultHeadingConfig: HeadingConfig = {
   mediaGap: 0.2,
   mediaRadius: 1.05,
   wordGap: 0.17,
-  marginBottom: 2,
+  marginBottom: 3.75,
   scale: 7.25,
   lineHeight: 0.9,
   stiffness: 110,
@@ -210,6 +210,32 @@ export const defaultPrezentConfig: PrezentConfig = {
 };
 
 /* ────────────────────────────────────────────── */
+/*  Taryfy Config (Plan badges)                    */
+/* ────────────────────────────────────────────── */
+
+export interface TaryfyConfig {
+  badgeRadius: number;      // px
+  headingSize: number;      // px
+  strokeWidth: number;      // px — text outline width
+  letterSpacing: number;    // px — space between characters
+  fractionSize: number;     // px — font size for fraction number (⅓, ⅛)
+  fractionBaseline: number; // px — vertical shift for fraction (negative = up)
+  bgPositionY: number;      // % — vertical position of bg image
+  bgScale: number;          // % — background zoom
+}
+
+export const defaultTaryfyConfig: TaryfyConfig = {
+  badgeRadius: 20,
+  headingSize: 63,
+  strokeWidth: 10,
+  letterSpacing: 2,
+  fractionSize: 86,
+  fractionBaseline: 6,
+  bgPositionY: 49,
+  bgScale: 103,
+};
+
+/* ────────────────────────────────────────────── */
 /*  Context                                        */
 /* ────────────────────────────────────────────── */
 
@@ -224,6 +250,8 @@ interface ConfigCtx {
   setSteps: Dispatch<SetStateAction<StepsConfig>>;
   prezent: PrezentConfig;
   setPrezent: Dispatch<SetStateAction<PrezentConfig>>;
+  taryfy: TaryfyConfig;
+  setTaryfy: Dispatch<SetStateAction<TaryfyConfig>>;
 }
 
 const Ctx = createContext<ConfigCtx | null>(null);
@@ -256,6 +284,12 @@ export function usePrezentConfig() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("Wrap with SectionConfigProvider");
   return [ctx.prezent, ctx.setPrezent] as const;
+}
+
+export function useTaryfyConfig() {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("Wrap with SectionConfigProvider");
+  return [ctx.taryfy, ctx.setTaryfy] as const;
 }
 
 /* ────────────────────────────────────────────── */
@@ -305,7 +339,7 @@ function Slider({
 /*  Settings Panel                                 */
 /* ────────────────────────────────────────────── */
 
-type Section = "hero" | "heading" | "steps" | "timeline" | "prezent";
+type Section = "hero" | "heading" | "steps" | "timeline" | "prezent" | "taryfy";
 type HeroTab = "heading" | "buttons" | "bzz" | "section" | "mobile";
 type TimelineTab = "text" | "cards" | "type";
 type HeadingTab = "type" | "media" | "timing" | "spring";
@@ -318,6 +352,7 @@ function SettingsPanel() {
   const [heading, setHeading] = useHeadingConfig();
   const [steps, setSteps] = useStepsConfig();
   const [prezent, setPrezent] = usePrezentConfig();
+  const [taryfy, setTaryfy] = useTaryfyConfig();
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<Section>("hero");
   const [heroTab, setHeroTab] = useState<HeroTab>("heading");
@@ -336,8 +371,10 @@ function SettingsPanel() {
     setSteps((prev) => ({ ...prev, [key]: v }));
   const setPr = <K extends keyof PrezentConfig>(key: K, v: PrezentConfig[K]) =>
     setPrezent((prev) => ({ ...prev, [key]: v }));
+  const setTr = <K extends keyof TaryfyConfig>(key: K, v: TaryfyConfig[K]) =>
+    setTaryfy((prev) => ({ ...prev, [key]: v }));
 
-  const configMap = { hero, heading, steps, timeline, prezent } as const;
+  const configMap = { hero, heading, steps, timeline, prezent, taryfy } as const;
   const copyConfig = () => {
     navigator.clipboard.writeText(JSON.stringify(configMap[section], null, 2));
   };
@@ -347,7 +384,8 @@ function SettingsPanel() {
     else if (section === "heading") setHeading(defaultHeadingConfig);
     else if (section === "steps") setSteps(defaultStepsConfig);
     else if (section === "timeline") setTimeline(defaultTimelineConfig);
-    else setPrezent(defaultPrezentConfig);
+    else if (section === "prezent") setPrezent(defaultPrezentConfig);
+    else setTaryfy(defaultTaryfyConfig);
   };
 
   const heroTabs: { id: HeroTab; label: string }[] = [
@@ -385,7 +423,7 @@ function SettingsPanel() {
         <div className="max-h-[calc(100vh-120px)] w-64 overflow-y-auto rounded-xl bg-zinc-900/95 p-3 shadow-2xl backdrop-blur-md">
           {/* Section selector */}
           <div className="mb-3 flex gap-1">
-            {(["hero", "heading", "steps", "timeline", "prezent"] as const).map((s) => (
+            {(["hero", "heading", "steps", "timeline", "prezent", "taryfy"] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setSection(s)}
@@ -395,7 +433,7 @@ function SettingsPanel() {
                     : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
                 }`}
               >
-                {{ hero: "Hero", heading: "H2", steps: "Steps", timeline: "TL", prezent: "Gift" }[s]}
+                {{ hero: "Hero", heading: "H2", steps: "Steps", timeline: "TL", prezent: "Gift", taryfy: "Price" }[s]}
               </button>
             ))}
           </div>
@@ -644,6 +682,20 @@ function SettingsPanel() {
               </div>
             </>
           )}
+
+          {/* ── Taryfy controls ── */}
+          {section === "taryfy" && (
+            <div className="flex flex-col gap-3">
+              <Slider label="Badge radius" value={taryfy.badgeRadius} onChange={(v) => setTr("badgeRadius", v)} min={0} max={40} />
+              <Slider label="Heading size" value={taryfy.headingSize} onChange={(v) => setTr("headingSize", v)} min={14} max={72} />
+              <Slider label="Stroke width" value={taryfy.strokeWidth} onChange={(v) => setTr("strokeWidth", v)} min={0} max={10} step={0.5} />
+              <Slider label="Letter spacing" value={taryfy.letterSpacing} onChange={(v) => setTr("letterSpacing", v)} min={-2} max={12} step={0.5} />
+              <Slider label="Fraction size" value={taryfy.fractionSize} onChange={(v) => setTr("fractionSize", v)} min={20} max={96} />
+              <Slider label="Fraction baseline" value={taryfy.fractionBaseline} onChange={(v) => setTr("fractionBaseline", v)} min={-20} max={20} step={0.5} />
+              <Slider label="BG position Y" value={taryfy.bgPositionY} onChange={(v) => setTr("bgPositionY", v)} min={0} max={100} unit="%" />
+              <Slider label="BG scale" value={taryfy.bgScale} onChange={(v) => setTr("bgScale", v)} min={80} max={200} unit="%" />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -660,9 +712,10 @@ export function SectionConfigProvider({ children }: { children: ReactNode }) {
   const [heading, setHeading] = useState<HeadingConfig>(defaultHeadingConfig);
   const [steps, setSteps] = useState<StepsConfig>(defaultStepsConfig);
   const [prezent, setPrezent] = useState<PrezentConfig>(defaultPrezentConfig);
+  const [taryfy, setTaryfy] = useState<TaryfyConfig>(defaultTaryfyConfig);
 
   return (
-    <Ctx.Provider value={{ hero, setHero, timeline, setTimeline, heading, setHeading, steps, setSteps, prezent, setPrezent }}>
+    <Ctx.Provider value={{ hero, setHero, timeline, setTimeline, heading, setHeading, steps, setSteps, prezent, setPrezent, taryfy, setTaryfy }}>
       {children}
       <SettingsPanel />
     </Ctx.Provider>

@@ -1,0 +1,113 @@
+[1/4] Fetching sitemap...
+  -> 5239 pasieka URLs found in sitemap
+[2/4] Fetching map pages for GPS (375 pages)...
+  progress: 50/375 pages, 700 coords
+  progress: 100/375 pages, 1400 coords
+  progress: 150/375 pages, 2099 coords
+  progress: 200/375 pages, 2798 coords
+  progress: 250/375 pages, 3498 coords
+  progress: 300/375 pages, 4198 coords
+  progress: 350/375 pages, 4898 coords
+  -> 4989 coords collected
+[2b/4] Fetching voivodeship filter pages (17 voivodeships)...
+  kujawsko-pomorskie: total 0
+  pomorskie: total 153
+  lubelskie: total 318
+  mazowieckie: total 250
+  podlaskie: total 77
+  swietokrzyskie: total 78
+  wielkopolskie: total 258
+  malopolskie: total 1455
+  lodzkie: total 178
+  lodzkie: total 308
+  slaskie: total 257
+  warminsko-mazurskie: total 199
+  podkarpackie: total 161
+  dolnoslaskie: total 806
+  opolskie: total 145
+  lubuskie: total 218
+  zachodniopomorskie: total 240
+  -> 4923 ids mapped to voivodeships
+[3/4] Fetching details for 5239 pasieki...
+  progress: 500/5239 fetched, 500 valid
+  progress: 1000/5239 fetched, 1000 valid
+  progress: 1500/5239 fetched, 1500 valid
+  progress: 2000/5239 fetched, 2000 valid
+  progress: 2500/5239 fetched, 2500 valid
+  progress: 3000/5239 fetched, 3000 valid
+  progress: 3500/5239 fetched, 3500 valid
+  progress: 4000/5239 fetched, 4000 valid
+  progress: 4500/5239 fetched, 4500 valid
+  progress: 5000/5239 fetched, 5000 valid
+  progress: 5239/5239 fetched, 5239 valid
+  -> 5239 valid records
+[4/4] Writing outputs...
+  JSON: /Users/rliukevich/BeeMiodzio/data/pasieki/pasieki.json (2,736,121 B)
+  CSV:  /Users/rliukevich/BeeMiodzio/data/pasieki/pasieki.csv (1,516,387 B)
+
+=== STATS ===
+Total records: 5239
+  malopolskie             1455
+  dolnoslaskie             806
+  lubelskie                318
+  (brak)                   317
+  lodzkie                  308
+  wielkopolskie            258
+  slaskie                  257
+  mazowieckie              249
+  zachodniopomorskie       240
+  lubuskie                 218
+  warminsko-mazurskie      199
+  podkarpackie             161
+  pomorskie                153
+  opolskie                 145
+  swietokrzyskie            78
+  podlaskie                 77
+
+Missing GPS:        250 (5%)
+Missing postal:     112 (2%)
+Missing voivodeship:317 (6%)
+
+[OK] Done in 168.9s
+Loaded 5239 records
+Rebuilding voivodeship map...
+  pomorskie                153
+  lubelskie                318
+  mazowieckie              250
+  podlaskie                 77
+  swietokrzyskie            78
+  malopolskie              258
+  wielkopolskie           1455
+  kujawsko-pomorskie       178
+  lodzkie                  130
+  slaskie                  257
+  warminsko-mazurskie      199
+  podkarpackie             161
+  dolnoslaskie             806
+  opolskie                 145
+  lubuskie                 218
+  zachodniopomorskie       240
+
+Corrected voivodeship labels: 1891
+Backfilled from postal code:  308
+
+=== FINAL STATS ===
+  wielkopolskie           1495
+  dolnoslaskie             856
+  lubelskie                336
+  slaskie                  302
+  malopolskie              289
+  zachodniopomorskie       265
+  mazowieckie              259
+  lubuskie                 232
+  warminsko-mazurskie      209
+  kujawsko-pomorskie       191
+  podkarpackie             168
+  pomorskie                156
+  opolskie                 151
+  lodzkie                  149
+  podlaskie                 88
+  swietokrzyskie            84
+  (brak)                     9
+
+Still missing voivodeship: 9
