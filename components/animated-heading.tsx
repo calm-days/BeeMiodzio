@@ -2,8 +2,8 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion } from "motion/react";
-import Image from "next/image";
 import { useHeadingConfig } from "@/components/section-config";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function AnimatedHeading({
   line1,
@@ -14,7 +14,21 @@ export function AnimatedHeading({
   line2Before: string;
   line2After: string;
 }) {
-  const [config] = useHeadingConfig();
+  const [rawConfig] = useHeadingConfig();
+  const isMobile = useIsMobile();
+  const config = isMobile
+    ? {
+        ...rawConfig,
+        scale: rawConfig.mobileScale,
+        lineHeight: rawConfig.mobileLineHeight,
+        marginBottom: rawConfig.mobileMarginBottom,
+        wordGap: rawConfig.mobileWordGap,
+        mediaW: rawConfig.mobileMediaW,
+        mediaH: rawConfig.mobileMediaH,
+        mediaGap: rawConfig.mobileMediaGap,
+        mediaRadius: rawConfig.mobileMediaRadius,
+      }
+    : rawConfig;
   const ref = useRef<HTMLDivElement>(null);
   const [viewKey, setViewKey] = useState(0);
   const [shouldAnimate, setShouldAnimate] = useState(false);
@@ -156,11 +170,15 @@ export function AnimatedHeading({
                   animate={{ clipPath: `inset(0% 0% 0% 0% round ${radius})` }}
                   transition={mediaTransition}
                 >
-                  <Image
-                    src="/heading-media.png"
-                    alt=""
-                    fill
-                    className="object-cover"
+                  <video
+                    src="/heading-media.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    aria-hidden
+                    className="absolute inset-0 h-full w-full object-cover object-bottom"
                   />
                 </motion.span>
               </motion.span>

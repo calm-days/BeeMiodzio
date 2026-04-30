@@ -1,10 +1,10 @@
 import Link from "next/link";
-
 import { AnimatedHeading } from "@/components/animated-heading";
 import { FaqItem } from "@/components/faq-item";
 import { HeroConfigurator } from "@/components/hero-configurator";
 import { PrezentSection } from "@/components/prezent-section";
-import { StepsSection } from "@/components/steps-section";
+import { ComparisonTable } from "@/components/comparison-table";
+import { JakToDzialaWireframe } from "@/components/jak-to-dziala-wireframe";
 import { TaryfySection } from "@/components/taryfy-section";
 import { TimelineSection } from "@/components/timeline-section";
 
@@ -35,39 +35,52 @@ const timelineSteps = [
   {
     label: "Po zakupie",
     text: "Dostajesz dostęp do panelu swojego ula — stamtąd śledzisz wszystko, co dzieje się na pasiece.",
+    image: "/co%20i%20kiedy/hf_20260428_195943_8c36f544-b995-40c6-a51a-bc8502acd3c5.png",
   },
   {
     label: "W ciągu tygodnia",
     text: "Dostajesz paczkę powitalną: certyfikat pszczelarza, słoiczek miodu na dobry początek i mały prezent od pszczół :)",
+    image: "/co%20i%20kiedy/hf_20260428_182920_80677118-880e-42ad-ac9d-d40b6cb219ae.png",
   },
   {
     label: "Czekając na sezon",
     text: "Na pasiece cisza — pszczoły odpoczywają po sezonie. Ale w Twoim panelu sporo się dzieje: wybierasz słoiczki, projektujesz etykiety (gotowe z Twoim imieniem albo własny design) i poznajesz świat pszczół od kuchni.",
+    image: "/co%20i%20kiedy/hf_20260428_181454_10b36ae2-061a-490f-acf6-a110bd9305fa.png",
   },
   {
     label: "Kwiecień — maj",
     text: "Pszczoły się budzą! Regularnie dostajesz zdjęcia i filmy z pasieki i okolicy — widzisz, jak Twój ul zaczyna nowy sezon.",
+    image: "/co%20i%20kiedy/hf_20260429_102307_e5a85e9e-3235-4528-80e5-859c47d5cec5.png",
   },
   {
     label: "Czerwiec — sierpień",
     text: "Pszczoły zbierają nektar, Twój ul przybiera na wadze — kilogram po kilogramie. Śledzisz to w panelu, a na kamerach widzisz, ile ruchu mają pszczoły.",
+    image: "/co%20i%20kiedy/hf_20260429_102323_b0e1b3b0-6351-4193-8f88-68f20ee89ff0.png",
   },
   {
     label: "Koniec września",
     text: "Czas na zbiór! Rozlewamy go do słoiczków, naklejamy etykiety, które wybrałeś, i wysyłamy.",
+    image: "/co%20i%20kiedy/hf_20260429_070534_89ed67d4-327e-4159-a659-a25c9d7aa353.png",
   },
 ];
 
 /* ─── Comparison table ─── */
 
 const comparisonRows = [
-  { bad: "Ultrafiltracja usuwa pyłek", good: "Miód surowy, niefiltrowany" },
-  { bad: "Nie wiesz skąd jest", good: "2 kamery na żywo z pasieki" },
-  { bad: "Anonimowa fabryka", good: "Pszczelarz Piotr, którego widzisz codziennie" },
-  { bad: "Plastikowe ule, chemia", good: "Drewniane ule, naturalna ochrona" },
-  { bad: "Pszczoły karmione syropem", good: "Pszczoły zimują na własnym miodzie" },
-  { bad: "Etykieta — jedyny dowód", good: "Badanie laboratoryjne w panelu klienta" },
-  { bad: "Słoiczek jak każdy inny", good: "Słoiczki z Twoim imieniem — albo z własnym designem" },
+  {
+    attribute: "Widzisz jak powstaje i skąd pochodzi Twój miód",
+    bad: "✗",
+    good: "2 kamery live · raporty z pasieki",
+  },
+  {
+    attribute: "Naturalne warunki dla pszczół",
+    bad: "Plastik, syrop, chemia",
+    good: "Drewniane ule · własny miód · zero chemii",
+    goodInfo: "Nasz miód jest inny. Jedna rodzinna pasieka na Dolnym Śląsku, pszczoły, które codziennie widzisz na kamerach. Bez importu, bez mieszanek, bez syropów, bez ultrafiltracji. Co roku trafia do akredytowanego laboratorium — więc wiesz dokładnie, co trafia do Twojego słoiczka.",
+  },
+  { attribute: "Surowy, niefiltrowany miód", bad: "Ultrafiltracja", good: "✓", badInfo: <>Większość miodu z supermarketu przechodzi ultrafiltrację — proces, który usuwa pyłek, a razem z nim właściwości zdrowotne i jakikolwiek ślad pochodzenia.<br /><br />Wygląda pięknie na półce, ale nie wiadomo ani skąd jest, ani co w nim zostało. Do tego ponad 50% tego miodu pochodzi z Chin.</> },
+  { attribute: "Badanie laboratoryjne", bad: "✗", good: "✓" },
+  { attribute: "Spersonalizowany słoiczek", bad: "✗", good: "✓" },
 ];
 
 /* ─── Pricing ─── */
@@ -79,9 +92,33 @@ const plans: {
   honey: string;
   features: string[];
   extras?: string[];
-  subtitle?: string;
   highlighted?: boolean;
 }[] = [
+  {
+    name: "1/8 ula",
+    price: "399",
+    renewal: "249 zł/rok",
+    honey: "Do 2–3 kg miodu rocznie",
+    features: [
+      "Rok obsługi na pasiece i fasowka miodu",
+      "2 kamery live (panorama + makro) i raporty",
+      "Ponad 10 designów etykiet z personalizacją",
+      "Elektroniczny certyfikat pszczelarza",
+    ],
+  },
+  {
+    name: "1/3 ula",
+    price: "899",
+    renewal: "599 zł/rok",
+    honey: "Do 5–7 kg miodu rocznie",
+    features: [
+      "Rok obsługi na pasiece i fasowka miodu",
+      "2 kamery live (panorama + makro) i raporty",
+      "Ponad 10 designów etykiet z personalizacją",
+      "Elektroniczny certyfikat pszczelarza",
+    ],
+    highlighted: true,
+  },
   {
     name: "Cały ul",
     price: "5 900",
@@ -89,38 +126,12 @@ const plans: {
     honey: "Do 15–20 kg miodu rocznie",
     features: [
       "Rok obsługi na pasiece i fasowka miodu",
-      "Panel klienta z 2 kamerami (panorama + makro) i raportami",
+      "2 kamery live (panorama + makro) i raporty",
       "Ponad 10 designów etykiet z personalizacją",
     ],
     extras: [
       "Wybór numeru ula",
       "Możliwość brandowania ula",
-    ],
-    highlighted: true,
-  },
-  {
-    name: "⅓ ula",
-    price: "899",
-    renewal: "599 zł/rok",
-    honey: "Do 5–7 kg miodu rocznie",
-    features: [
-      "Rok obsługi na pasiece i fasowka miodu",
-      "Panel klienta z 2 kamerami (panorama + makro) i raportami",
-      "Ponad 10 designów etykiet z personalizacją",
-      "Elektroniczny certyfikat pszczelarza",
-    ],
-  },
-  {
-    name: "⅛ ula",
-    subtitle: "taryfa na start",
-    price: "399",
-    renewal: "249 zł/rok",
-    honey: "Do 2–3 kg miodu rocznie",
-    features: [
-      "Rok obsługi na pasiece i fasowka miodu",
-      "Panel klienta z 2 kamerami (panorama + makro) i raportami",
-      "Ponad 10 designów etykiet z personalizacją",
-      "Elektroniczny certyfikat pszczelarza",
     ],
   },
 ];
@@ -237,7 +248,7 @@ export default function HomePage() {
       <HeroConfigurator />
 
       {/* Jak to działa */}
-      <StepsSection steps={howItWorks} />
+      <JakToDzialaWireframe steps={howItWorks} />
 
       {/* Content sections */}
       <div className="relative z-10">
@@ -249,55 +260,21 @@ export default function HomePage() {
             line2After="Miód?"
           />
 
-          <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-16">
-            {/* Text column */}
-            <div className="lg:w-1/2">
-              <p className="mb-6 text-muted-foreground">
-                Większość miodu z supermarketu przechodzi ultrafiltrację &mdash;
-                proces, który usuwa pyłek, a razem z nim właściwości zdrowotne
-                i jakikolwiek ślad pochodzenia. Wygląda pięknie na półce, ale nie
-                wiadomo ani skąd jest, ani co w nim zostało. Do tego ponad 50%
-                tego miodu pochodzi z Chin.
-              </p>
+          <ComparisonTable
+            rows={comparisonRows}
+            leftLabel="Miód z półki"
+            rightLabel="Miód z BeeMiodzio"
+          />
 
-              <Link
-                href="/dlaczego-miod-jest-zdrowy"
-                className="mb-8 inline-block text-sm font-medium underline underline-offset-4 hover:text-foreground/80"
-              >
-                Dowiedz się więcej o właściwościach zdrowotnych miodu &rarr;
-              </Link>
-
-              <p className="text-muted-foreground">
-                Nasz miód jest inny. Jedna rodzinna pasieka na Dolnym Śląsku,
-                pszczoły, które codziennie widzisz na kamerach. Bez importu, bez
-                mieszanek, bez syropów, bez ultrafiltracji. Co roku trafia do
-                akredytowanego laboratorium &mdash; więc wiesz dokładnie, co
-                trafia do Twojego słoiczka.
-              </p>
-            </div>
-
-            {/* Comparison table */}
-            <div className="overflow-hidden rounded-2xl border lg:w-1/2">
-              <div className="grid grid-cols-2">
-                <div className="bg-destructive/10 p-4 text-center text-sm font-semibold uppercase tracking-wider text-destructive">
-                  &#10007; Miód z półki
-                </div>
-                <div className="bg-emerald-500/10 p-4 text-center text-sm font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  &#10003; Miód z BeeMiodzio
-                </div>
-              </div>
-              {comparisonRows.map((row, i) => (
-                <div key={i} className="grid grid-cols-2 border-t">
-                  <div className="p-4 text-sm text-muted-foreground">
-                    {row.bad}
-                  </div>
-                  <div className="border-l p-4 text-sm font-medium">
-                    {row.good}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="mt-8 text-center">
+            <Link
+              href="/dlaczego-miod-jest-zdrowy"
+              className="inline-block text-sm font-medium underline underline-offset-4 hover:text-foreground/80"
+            >
+              Dowiedz się więcej o właściwościach zdrowotnych miodu &rarr;
+            </Link>
           </div>
+
         </section>
 
         {/* Co i kiedy dostaniesz */}

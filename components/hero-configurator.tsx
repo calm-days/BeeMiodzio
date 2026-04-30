@@ -205,17 +205,34 @@ export function HeroConfigurator() {
               gap: `${config.buttonGap}px`,
             }}
           >
-            <Link
-              href="/cennik"
-              className="inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-primary font-medium leading-none text-primary-foreground transition-colors hover:bg-primary/90"
-              style={{
-                fontSize: `${config.buttonFontSize}px`,
-                padding: `${config.buttonPaddingY + 1}px ${config.buttonPaddingX}px ${config.buttonPaddingY - 1}px`,
-                borderRadius: `${config.buttonRadius}px`,
-              }}
-            >
-              Chcę pszczoły!
-            </Link>
+            <div className="relative inline-flex flex-col items-center">
+              <Link
+                href="/cennik"
+                className="relative z-10 inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-primary font-medium leading-none text-primary-foreground transition-colors hover:bg-primary/90"
+                style={{
+                  fontSize: `${config.buttonFontSize}px`,
+                  padding: `${config.buttonPaddingY + 1}px ${config.buttonPaddingX}px ${config.buttonPaddingY - 1}px`,
+                  borderRadius: `${config.buttonRadius}px`,
+                }}
+              >
+                Chcę pszczoły!
+              </Link>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 201.126 74.676"
+                aria-hidden="true"
+                className="pointer-events-none absolute"
+                style={{
+                  top: `calc(100% - ${config.dripOffset}px)`,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: `calc(100% - ${config.dripInset * 2}px)`,
+                  color: "var(--primary)",
+                }}
+              >
+                <path d="M0,0S16.706,0,22.647,8.912s8.912,11.882,14.853,2.97,7.151-8.911,19.913-8.911,18.7,8.911,18.7,20.794S70.3,42.216,73.267,51.127s11.882,8.912,11.882-2.97-3.09-15.481-3.09-24.392S84.526,2.971,93.689,2.971s24.016,8.911,35.9,8.911,14.853-8.911,32.676-8.911,17.824,17.823,23.765,17.823S195.059,0,201,0Z" fill="currentColor" />
+              </svg>
+            </div>
             <Link
               href="/o-nas"
               className="inline-flex items-center justify-center whitespace-nowrap text-trim-cap border border-border bg-background/80 font-medium leading-none backdrop-blur-sm transition-colors hover:bg-accent"
@@ -233,6 +250,68 @@ export function HeroConfigurator() {
 
       {/* Mobile: heading anchored to top, buttons anchored to bottom */}
       <div className="lg:hidden">
+        {/* Mobile stage — full-bleed wrapper matching the image box */}
+        <div
+          className="pointer-events-none absolute inset-y-0 z-10"
+          style={{
+            left: "50%",
+            right: "50%",
+            marginLeft: "-50vw",
+            marginRight: "-50vw",
+            width: "100vw",
+          }}
+        >
+          <div
+            className="absolute"
+            style={{
+              left: `${stage.x}px`,
+              top: `${stage.y}px`,
+              width: `${stage.w}px`,
+              height: `${stage.h}px`,
+            }}
+          >
+            {/* Bzz-bzz drip animation (mobile, stage-anchored) */}
+            <div
+              className="absolute"
+              style={{
+                width: 0,
+                height: 0,
+                right: `${config.bzzRight}%`,
+                top: `${config.groundY + config.bzzOffsetY}%`,
+              }}
+            >
+              <p
+                className="absolute whitespace-nowrap font-medium"
+                style={{
+                  fontSize: `${config.mobileBzzSize}px`,
+                  fontFamily: "var(--font-mono)",
+                  color: "rgba(255,255,255,0.95)",
+                  textShadow: "0 1px 8px rgba(0,0,0,0.3)",
+                  opacity: 0,
+                  animation: "2s linear infinite backwards bzz-1",
+                  transformOrigin: "center center",
+                }}
+              >
+                *Bzzz*
+              </p>
+              <p
+                className="absolute whitespace-nowrap font-medium"
+                style={{
+                  fontSize: `${config.mobileBzzSize}px`,
+                  fontFamily: "var(--font-mono)",
+                  color: "rgba(255,255,255,0.95)",
+                  textShadow: "0 1px 8px rgba(0,0,0,0.3)",
+                  opacity: 0,
+                  animation: "2s linear 1s infinite backwards bzz-2",
+                  transformOrigin: "center center",
+                }}
+              >
+                *Bzzz*
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Heading — top (z-10 so it sits BEHIND the fg cutout like desktop) */}
         <motion.div
           className="absolute inset-x-0 z-10 text-center"
@@ -277,17 +356,34 @@ export function HeroConfigurator() {
             paddingRight: `${config.mobilePaddingX}px`,
           }}
         >
-          <Link
-            href="/cennik"
-            className="inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-primary font-medium leading-none text-primary-foreground transition-colors hover:bg-primary/90"
-            style={{
-              fontSize: `${config.mobileButtonFontSize}px`,
-              padding: `${config.mobileButtonPaddingY + 1}px ${config.mobileButtonPaddingX}px ${config.mobileButtonPaddingY - 1}px`,
-              borderRadius: `${config.mobileButtonRadius}px`,
-            }}
-          >
-            Chcę pszczoły!
-          </Link>
+          <div className="relative inline-flex flex-col items-center">
+            <Link
+              href="/cennik"
+              className="relative z-10 inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-primary font-medium leading-none text-primary-foreground transition-colors hover:bg-primary/90"
+              style={{
+                fontSize: `${config.mobileButtonFontSize}px`,
+                padding: `${config.mobileButtonPaddingY + 1}px ${config.mobileButtonPaddingX}px ${config.mobileButtonPaddingY - 1}px`,
+                borderRadius: `${config.mobileButtonRadius}px`,
+              }}
+            >
+              Chcę pszczoły!
+            </Link>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 201.126 74.676"
+              aria-hidden="true"
+              className="pointer-events-none absolute"
+              style={{
+                top: `calc(100% - ${config.dripOffset}px)`,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: `calc(100% - ${config.dripInset * 2}px)`,
+                color: "var(--primary)",
+              }}
+            >
+              <path d="M0,0S16.706,0,22.647,8.912s8.912,11.882,14.853,2.97,7.151-8.911,19.913-8.911,18.7,8.911,18.7,20.794S70.3,42.216,73.267,51.127s11.882,8.912,11.882-2.97-3.09-15.481-3.09-24.392S84.526,2.971,93.689,2.971s24.016,8.911,35.9,8.911,14.853-8.911,32.676-8.911,17.824,17.823,23.765,17.823S195.059,0,201,0Z" fill="currentColor" />
+            </svg>
+          </div>
           <Link
             href="/o-nas"
             className="inline-flex items-center justify-center whitespace-nowrap text-trim-cap border border-border bg-background/80 font-medium leading-none backdrop-blur-sm transition-colors hover:bg-accent"

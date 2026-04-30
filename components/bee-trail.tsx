@@ -4,183 +4,100 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { useScroll, useTransform, useMotionValueEvent } from "motion/react";
 import Image from "next/image";
 
+import { useIsMobile } from "@/hooks/use-mobile";
+
 const BEE_SIZE = 64;
 const DEBUG = false;
 
-type PathPoints = {
-  x0: number; y0: number;
-  cx1a: number; cy1a: number; cx1b: number; cy1b: number;
-  x1: number; y1: number;
-  cx2a: number; cy2a: number; cx2b: number; cy2b: number;
-  x2: number; y2: number;
-};
+type Waypoint = { x: number; y: number };
 
-const DEFAULT_POINTS: PathPoints = {
-  x0: 100, y0: 20,
-  cx1a: 100, cy1a: 200, cx1b: 613, cy1b: 180,
-  x1: 920, y1: 400,
-  cx2a: 920, cy2a: 620, cx2b: 0, cy2b: 566,
-  x2: 99, y2: 751,
-};
+// Coordinate space: x 0–1000 = screen width, y 0–800 = container height
 
-function buildPath(pts: PathPoints, w: number, h: number): string {
-  const sx = w / 1000;
-  const sy = h / 800;
+// Exact original hand-tuned desktop Bezier — not editable, not approximated
+function buildDesktopPath(w: number, h: number): string {
+  const sx = w / 1000, sy = h / 800;
   const s = (x: number, y: number) => `${x * sx},${y * sy}`;
-  const p = pts;
-  // Mirror cx2a/cy2a through the midpoint so the tangent is always continuous
-  const cx2a = 2 * p.x1 - p.cx1b;
-  const cy2a = 2 * p.y1 - p.cy1b;
   return [
-    `M ${s(p.x0, p.y0)}`,
-    `C ${s(p.cx1a, p.cy1a)} ${s(p.cx1b, p.cy1b)} ${s(p.x1, p.y1)}`,
-    `C ${s(cx2a, cy2a)} ${s(p.cx2b, p.cy2b)} ${s(p.x2, p.y2)}`,
+    `M ${s(888, 0)}`,
+    `C ${s(0, 146)} ${s(0, 220)} ${s(629, 391)}`,
+    `C ${s(1258, 562)} ${s(919, 453)} ${s(322, 800)}`,
   ].join(" ");
 }
 
-function PointSlider({
-  label,
-  value,
-  onChange,
-  max,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  max: number;
-}) {
-  return (
-    <label className="flex items-center gap-2 text-[11px]">
-      <span className="w-10 shrink-0 font-mono">{label}</span>
-      <input
-        type="range"
-        min={0}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1 w-full accent-amber-400"
-      />
-      <span className="w-8 shrink-0 text-right font-mono">{value}</span>
-    </label>
-  );
+const MOBILE_WAYPOINTS: Waypoint[] = [
+  { x: 927, y: -9 },
+  { x: 644, y: 82 },
+  { x: -81, y: 102 },
+  { x: -150, y: 200 },
+  { x: 305, y: 337 },
+  { x: 1009, y: 376 },
+  { x: 1150, y: 509 },
+  { x: -150, y: 588 },
+  { x: 311, y: 740 },
+  { x: 943, y: 773 },
+];
+
+function segmentDist(p: Waypoint, a: Waypoint, b: Waypoint): number {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
-function DebugPanel({
-  pts,
-  onChange,
-}: {
-  pts: PathPoints;
-  onChange: (pts: PathPoints) => void;
-}) {
-  const set = (key: keyof PathPoints) => (v: number) =>
-    onChange({ ...pts, [key]: v });
-
-  const groups: { title: string; fields: { key: keyof PathPoints; max: number }[] }[] = [
-    {
-      title: "Start",
-      fields: [
-        { key: "x0", max: 1000 }, { key: "y0", max: 800 },
-      ],
-    },
-    {
-      title: "Control 1a",
-      fields: [
-        { key: "cx1a", max: 1000 }, { key: "cy1a", max: 800 },
-      ],
-    },
-    {
-      title: "Control 1b",
-      fields: [
-        { key: "cx1b", max: 1000 }, { key: "cy1b", max: 800 },
-      ],
-    },
-    {
-      title: "Mid",
-      fields: [
-        { key: "x1", max: 1000 }, { key: "y1", max: 800 },
-      ],
-    },
-    {
-      title: "Control 2b",
-      fields: [
-        { key: "cx2b", max: 1000 }, { key: "cy2b", max: 800 },
-      ],
-    },
-    {
-      title: "End",
-      fields: [
-        { key: "x2", max: 1000 }, { key: "y2", max: 800 },
-      ],
-    },
-  ];
-
-  const code = `x0:${pts.x0} y0:${pts.y0} cx1a:${pts.cx1a} cy1a:${pts.cy1a} cx1b:${pts.cx1b} cy1b:${pts.cy1b} x1:${pts.x1} y1:${pts.y1} cx2a:${pts.cx2a} cy2a:${pts.cy2a} cx2b:${pts.cx2b} cy2b:${pts.cy2b} x2:${pts.x2} y2:${pts.y2}`;
-
-  return (
-    <div className="pointer-events-auto fixed right-4 top-4 z-50 flex max-h-[90vh] w-64 flex-col gap-1 overflow-y-auto rounded-xl border bg-black/90 p-4 text-white shadow-2xl">
-      <p className="mb-1 text-xs font-bold">Bee Path Tuner</p>
-      {groups.map((g) => (
-        <div key={g.title}>
-          <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-amber-400">
-            {g.title}
-          </p>
-          {g.fields.map((f) => (
-            <PointSlider
-              key={f.key}
-              label={f.key}
-              value={pts[f.key]}
-              onChange={set(f.key)}
-              max={f.max}
-            />
-          ))}
-        </div>
-      ))}
-      <button
-        onClick={() => onChange({ ...DEFAULT_POINTS })}
-        className="mt-2 rounded bg-white/10 px-2 py-1 text-[10px] hover:bg-white/20"
-      >
-        Reset
-      </button>
-      <button
-        onClick={() => navigator.clipboard.writeText(code)}
-        className="rounded bg-amber-500/20 px-2 py-1 text-[10px] text-amber-300 hover:bg-amber-500/30"
-      >
-        Copy values
-      </button>
-    </div>
-  );
+// Converts waypoints to an SVG path string via Catmull-Rom → cubic Bezier.
+// Phantom duplicate at each end clamps tangents to zero at start/finish.
+function catmullRomToSvg(pts: Waypoint[], w: number, h: number): string {
+  if (pts.length < 2) return "";
+  const sx = w / 1000;
+  const sy = h / 800;
+  const s = (x: number, y: number) => `${x * sx},${y * sy}`;
+  const p = [pts[0], ...pts, pts[pts.length - 1]];
+  let d = `M ${s(p[1].x, p[1].y)}`;
+  for (let i = 1; i < p.length - 2; i++) {
+    const p0 = p[i - 1], p1 = p[i], p2 = p[i + 1], p3 = p[i + 2];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${s(cp1x, cp1y)} ${s(cp2x, cp2y)} ${s(p2.x, p2.y)}`;
+  }
+  return d;
 }
 
 export function BeeTrail() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
   const trailRef = useRef<SVGPathElement>(null);
 
-  const [pts, setPts] = useState<PathPoints>({ ...DEFAULT_POINTS });
-  const [pos, setPos] = useState({ x: 0, y: 0, angle: 0, flip: false });
+  const isMobile = useIsMobile();
+  const [mobileWaypoints, setMobileWaypoints] = useState<Waypoint[]>([...MOBILE_WAYPOINTS]);
+  const waypoints = mobileWaypoints;
+  const setWaypoints = setMobileWaypoints;
+
+  const [pos, setPos] = useState({ x: 0, y: 0, flip: false });
   const [totalLength, setTotalLength] = useState(0);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start 80%", "end 40%"],
+    offset: isMobile
+      ? ["start 60%", "end 20%"]
+      : ["start 80%", "end 40%"],
   });
 
   // Ease only at the edges, linear in the middle
   const progress = useTransform(scrollYProgress, (v) => {
     const t = Math.max(0, Math.min(1, v));
-    const e = 0.15; // edge zone size
-    // Linear span = 1 - 2*e = 0.7
-    // Quadratic edges each contribute half their zone: e/2 each
-    // Total range: e/2 + (1-2e) + e/2 = 1-e
-    // We need to normalize so output spans 0..1
-    const total = 1 - e; // e/2 + (1-2e) + e/2
+    const e = 0.15;
+    const total = 1 - e;
     if (t < e) {
-      const n = t / e; // 0..1
+      const n = t / e;
       return (e * 0.5 * n * n) / total;
     }
     if (t > 1 - e) {
-      const n = (1 - t) / e; // 1..0
+      const n = (1 - t) / e;
       return 1 - (e * 0.5 * n * n) / total;
     }
     return ((e * 0.5) + (t - e)) / total;
@@ -198,7 +115,7 @@ export function BeeTrail() {
   useEffect(() => {
     if (!pathRef.current || size.w === 0) return;
     setTotalLength(pathRef.current.getTotalLength());
-  }, [size, pts]);
+  }, [size, isMobile, mobileWaypoints]);
 
   const updateBee = useCallback(
     (p: number) => {
@@ -209,20 +126,14 @@ export function BeeTrail() {
       const len = p * totalLength;
       const pt = path.getPointAtLength(len);
 
-      // Use a bigger lookahead to avoid jitter, and clamp so we don't overshoot
       const lookAhead = Math.min(len + 20, totalLength);
       const behind = Math.max(len - 20, 0);
       const ptA = path.getPointAtLength(behind);
       const ptB = path.getPointAtLength(lookAhead);
-      const rawAngle =
-        Math.atan2(ptB.y - ptA.y, ptB.x - ptA.x) * (180 / Math.PI);
+      const rawAngle = Math.atan2(ptB.y - ptA.y, ptB.x - ptA.x) * (180 / Math.PI);
+      const flip = Math.abs(rawAngle) > 90;
 
-      const goingLeft = Math.abs(rawAngle) > 90;
-      // Rotation disabled — bee stays upright, only flips direction
-      const angle = 0;
-      const flip = p > 0.5 ? true : goingLeft;
-
-      setPos({ x: pt.x, y: pt.y, angle, flip });
+      setPos({ x: pt.x, y: pt.y, flip });
 
       const trailGap = BEE_SIZE * 0.6;
       const revealed = Math.max(0, len - trailGap);
@@ -237,17 +148,77 @@ export function BeeTrail() {
     if (totalLength > 0) updateBee(progress.get());
   }, [totalLength, updateBee, progress]);
 
-  const pixelPath = size.w > 0 ? buildPath(pts, size.w, size.h) : "";
+  const pixelPath = size.w > 0
+    ? (isMobile ? catmullRomToSvg(mobileWaypoints, size.w, size.h) : buildDesktopPath(size.w, size.h))
+    : "";
   const vb = `0 0 ${size.w} ${size.h}`;
 
+  const copyWaypoints = useCallback(() => {
+    const str = waypoints.map(wp => `{ x: ${wp.x}, y: ${wp.y} }`).join(",\n  ");
+    navigator.clipboard.writeText(`[\n  ${str}\n]`);
+  }, [waypoints]);
+
+  const resetWaypoints = useCallback(() => {
+    setWaypoints(isMobile ? [...MOBILE_WAYPOINTS] : [...DESKTOP_WAYPOINTS]);
+  }, [isMobile, setWaypoints]);
+
+  const addWaypoint = useCallback(() => {
+    if (size.w === 0) return;
+    // Convert bee pixel position → waypoint coordinate space
+    const beeWp: Waypoint = {
+      x: Math.round(pos.x * 1000 / size.w),
+      y: Math.round(pos.y * 800 / size.h),
+    };
+    setWaypoints(prev => {
+      // Find the segment the bee is closest to and insert there
+      let minDist = Infinity;
+      let insertAt = prev.length;
+      for (let i = 0; i < prev.length - 1; i++) {
+        const d = segmentDist(beeWp, prev[i], prev[i + 1]);
+        if (d < minDist) { minDist = d; insertAt = i + 1; }
+      }
+      const next = [...prev];
+      next.splice(insertAt, 0, beeWp);
+      return next;
+    });
+  }, [pos, size, setWaypoints]);
+
+  const deleteWaypoint = useCallback((i: number) => {
+    setWaypoints(prev => prev.length > 2 ? prev.filter((_, j) => j !== i) : prev);
+  }, [setWaypoints]);
+
   return (
-    <div ref={containerRef} className="pointer-events-none absolute inset-0">
-      {DEBUG && <DebugPanel pts={pts} onChange={setPts} />}
+    <div ref={containerRef} className="pointer-events-none absolute inset-0 z-50">
+      {DEBUG && (
+        <div className="pointer-events-auto fixed right-4 top-4 z-50 flex gap-2">
+          <button
+            onClick={resetWaypoints}
+            className="rounded-lg bg-black/80 px-3 py-1.5 text-[11px] font-mono text-white/60 shadow-xl hover:text-white"
+          >
+            Reset
+          </button>
+          <button
+            onClick={addWaypoint}
+            className="rounded-lg bg-black/80 px-3 py-1.5 text-[11px] font-mono text-green-400 shadow-xl hover:text-green-300"
+          >
+            + Add
+          </button>
+          <button
+            onClick={copyWaypoints}
+            className="rounded-lg bg-black/80 px-3 py-1.5 text-[11px] font-mono text-amber-400 shadow-xl"
+          >
+            Copy
+          </button>
+        </div>
+      )}
 
       <svg
+        ref={svgRef}
         className="absolute inset-0 h-full w-full"
         viewBox={vb}
+        overflow="visible"
         xmlns="http://www.w3.org/2000/svg"
+        style={DEBUG ? { pointerEvents: "none" } : undefined}
       >
         <path ref={pathRef} d={pixelPath} fill="none" stroke="none" />
 
@@ -265,49 +236,14 @@ export function BeeTrail() {
           </mask>
         </defs>
 
-        {/* Debug: show full path + control points */}
         {DEBUG && (
-          <>
-            <path
-              d={pixelPath}
-              fill="none"
-              stroke="rgba(255,100,100,0.3)"
-              strokeWidth="1"
-              strokeDasharray="4 4"
-            />
-            {/* Control point lines */}
-            {(() => {
-              const sx = size.w / 1000;
-              const sy = size.h / 800;
-              return (
-                <>
-                  <line x1={pts.x0 * sx} y1={pts.y0 * sy} x2={pts.cx1a * sx} y2={pts.cy1a * sy} stroke="rgba(255,200,0,0.4)" strokeWidth="1" />
-                  <line x1={pts.x1 * sx} y1={pts.y1 * sy} x2={pts.cx1b * sx} y2={pts.cy1b * sy} stroke="rgba(255,200,0,0.4)" strokeWidth="1" />
-                  <line x1={pts.x1 * sx} y1={pts.y1 * sy} x2={(2 * pts.x1 - pts.cx1b) * sx} y2={(2 * pts.y1 - pts.cy1b) * sy} stroke="rgba(100,200,255,0.4)" strokeWidth="1" />
-                  <line x1={pts.x2 * sx} y1={pts.y2 * sy} x2={pts.cx2b * sx} y2={pts.cy2b * sy} stroke="rgba(100,200,255,0.4)" strokeWidth="1" />
-                  {/* Points */}
-                  {Object.entries(pts).map(([key, val], i) => {
-                    const isX = key.includes("x") || key.startsWith("cx");
-                    if (!isX) return null;
-                    const yKey = key.replace("x", "y").replace("X", "Y") as keyof PathPoints;
-                    // Map cx1a -> cy1a, x0 -> y0, etc.
-                    const mappedYKey = key.replace(/x/i, (m) => m === "x" ? "y" : "Y") as keyof PathPoints;
-                    if (!(mappedYKey in pts)) return null;
-                    const isControl = key.startsWith("c");
-                    return (
-                      <circle
-                        key={key}
-                        cx={val * (size.w / 1000)}
-                        cy={pts[mappedYKey] * (size.h / 800)}
-                        r={isControl ? 4 : 6}
-                        fill={isControl ? "rgba(255,200,0,0.7)" : "rgba(255,100,100,0.8)"}
-                      />
-                    );
-                  })}
-                </>
-              );
-            })()}
-          </>
+          <path
+            d={pixelPath}
+            fill="none"
+            stroke="rgba(255,60,60,0.9)"
+            strokeWidth="3"
+            strokeDasharray="6 4"
+          />
         )}
 
         <path
@@ -320,6 +256,112 @@ export function BeeTrail() {
           strokeLinecap="round"
           mask="url(#trail-reveal)"
         />
+
+        {/* Draggable waypoint handles — rendered last so they're on top */}
+        {DEBUG && size.w > 0 && waypoints.map((wp, i) => {
+          const cx = wp.x * size.w / 1000;
+          const cy = wp.y * size.h / 800;
+          const offLeft  = cx < -4;
+          const offRight = cx > size.w + 4;
+          const offScreen = offLeft || offRight;
+          // Edge handle X: pinned 20px from the relevant edge
+          const edgeCx = offLeft ? 20 : size.w - 20;
+
+          const onPointerDown = (e: React.PointerEvent) => {
+            e.stopPropagation();
+            (e.currentTarget as Element).setPointerCapture(e.pointerId);
+          };
+
+          const onPointerMove = (e: React.PointerEvent) => {
+            if (!e.buttons || !svgRef.current) return;
+            const rect = svgRef.current.getBoundingClientRect();
+            const yWp = Math.round((e.clientY - rect.top) * 800 / size.h);
+            if (offScreen) {
+              // Only Y is controllable for off-screen points
+              setWaypoints(prev => prev.map((p, j) => j === i ? { ...p, y: yWp } : p));
+            } else {
+              const xWp = Math.round((e.clientX - rect.left) * 1000 / size.w);
+              setWaypoints(prev => prev.map((p, j) => j === i ? { x: xWp, y: yWp } : p));
+            }
+          };
+
+          const delCx = offScreen ? edgeCx : cx + 12;
+          const delCy = cy - 14;
+
+          return (
+            <g key={i}>
+              {offScreen ? (
+                /* Edge handle: tab pinned to left/right edge, drag vertically */
+                <g
+                  style={{ pointerEvents: "all", cursor: "ns-resize", touchAction: "none" }}
+                  onPointerDown={onPointerDown}
+                  onPointerMove={onPointerMove}
+                >
+                  {/* Dashed line across the edge to suggest the point is off-screen */}
+                  <line
+                    x1={offLeft ? 0 : size.w} y1={cy}
+                    x2={edgeCx} y2={cy}
+                    stroke="rgba(251,191,36,0.35)" strokeWidth="1" strokeDasharray="3 3"
+                    style={{ pointerEvents: "none" }}
+                  />
+                  {/* Hit area */}
+                  <rect x={edgeCx - 16} y={cy - 16} width={32} height={32} fill="rgba(0,0,0,0)" />
+                  {/* Pill */}
+                  <rect x={edgeCx - 12} y={cy - 10} width={24} height={20} rx={5}
+                    fill="black" stroke="rgb(251,191,36)" strokeWidth="1.5" />
+                  <text x={edgeCx} y={cy + 4} fontSize="12" fill="rgb(251,191,36)"
+                    textAnchor="middle" style={{ pointerEvents: "none", userSelect: "none" }}>
+                    ↕
+                  </text>
+                  {/* Y value label */}
+                  <text
+                    x={offLeft ? edgeCx + 18 : edgeCx - 18} y={cy + 4}
+                    fontSize="10" fill="rgb(251,191,36)" fontFamily="monospace"
+                    textAnchor={offLeft ? "start" : "end"}
+                    style={{ pointerEvents: "none", userSelect: "none" }}
+                  >
+                    {wp.y}
+                  </text>
+                </g>
+              ) : (
+                /* Normal on-screen dot */
+                <>
+                  <g
+                    style={{ pointerEvents: "all", cursor: "grab", touchAction: "none" }}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                  >
+                    <circle cx={cx} cy={cy} r={22} fill="rgba(0,0,0,0)" />
+                    <circle cx={cx} cy={cy} r={8} fill="white" stroke="rgb(251,191,36)" strokeWidth="2.5" />
+                  </g>
+                  <text
+                    x={cx + 12} y={cy - 8}
+                    fontSize="11" fill="rgb(251,191,36)" fontFamily="monospace"
+                    style={{ pointerEvents: "none", userSelect: "none" }}
+                  >
+                    {wp.x},{wp.y}
+                  </text>
+                </>
+              )}
+              {/* Delete button */}
+              {waypoints.length > 2 && (
+                <g
+                  style={{ pointerEvents: "all", cursor: "pointer" }}
+                  onPointerDown={(e) => { e.stopPropagation(); deleteWaypoint(i); }}
+                >
+                  <circle cx={delCx} cy={delCy} r={8} fill="rgb(239,68,68)" />
+                  <text
+                    x={delCx} y={delCy + 4}
+                    fontSize="11" fontWeight="bold" fill="white" textAnchor="middle"
+                    style={{ pointerEvents: "none", userSelect: "none" }}
+                  >
+                    ×
+                  </text>
+                </g>
+              )}
+            </g>
+          );
+        })}
       </svg>
 
       <div
@@ -329,7 +371,7 @@ export function BeeTrail() {
           top: pos.y - BEE_SIZE * 0.65,
           width: BEE_SIZE,
           height: BEE_SIZE,
-          transform: `scaleX(${pos.flip ? -1 : 1}) rotate(${pos.angle}deg)`,
+          transform: `scaleX(${pos.flip ? -1 : 1})`,
           willChange: "transform, left, top",
         }}
       >

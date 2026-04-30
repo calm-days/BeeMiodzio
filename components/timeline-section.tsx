@@ -2,12 +2,14 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
+import Image from "next/image";
 import { flags } from "@/lib/flags";
 import { useTimelineConfig } from "@/components/section-config";
 
 type TimelineStep = {
   label: string;
   text: string;
+  image?: string;
 };
 
 type Props = {
@@ -78,7 +80,11 @@ export function TimelineSection({ steps }: Props) {
                     {step.label}
                   </p>
                 </div>
-                <div className="mb-3 aspect-[4/3] bg-neutral-200" />
+                <div className="relative mb-3 aspect-[4/3] overflow-hidden rounded-sm bg-neutral-200">
+                    {step.image && (
+                      <Image src={step.image} alt={step.label} fill className="object-cover" sizes="400px" />
+                    )}
+                  </div>
                 <p className="text-sm text-neutral-600">{step.text}</p>
               </div>
             ))}
@@ -156,7 +162,11 @@ export function TimelineSection({ steps }: Props) {
                   <span className="absolute -left-1 -top-1 z-10 inline-flex items-center bg-[#F3BB11] px-2.5 py-1 text-xs font-bold text-white">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div className="aspect-[4/3] w-full bg-neutral-200" />
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-sm bg-neutral-200">
+                    {step.image && (
+                      <Image src={step.image} alt={step.label} fill className="object-cover" sizes="400px" />
+                    )}
+                  </div>
                 </div>
                 <p
                   className="leading-relaxed text-neutral-600"
