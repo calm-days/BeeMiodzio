@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
+import { MoveRight } from "lucide-react";
 import { useHeroConfig } from "@/components/section-config";
+import { HeroWave } from "@/components/hero-wave";
 
 // Hero image natural dimensions (both bg and fg are the same size)
 const IMG_W = 4800;
@@ -14,6 +16,8 @@ const IMG_ASPECT = IMG_W / IMG_H;
 export function HeroConfigurator() {
   const [config] = useHeroConfig();
   const sectionRef = useRef<HTMLElement>(null);
+  const bgWrapRef = useRef<HTMLDivElement>(null);
+  const fgWrapRef = useRef<HTMLDivElement>(null);
 
   // Stage = the image's actual displayed box (object-cover math).
   // x/y are in viewport-relative pixels inside the full-bleed wrapper (0,0 = top-left of 100vw × sectionH area).
@@ -65,15 +69,19 @@ export function HeroConfigurator() {
         } as React.CSSProperties
       }
     >
-      {/* Background image — full bleed */}
+      {/* Background image — full bleed.
+          `bottom` is overridden by config.waveOverflowY so the wrap can extend below the section
+          (otherwise the wave's troughs would be clipped by the section edge). */}
       <div
-        className="absolute inset-y-0 -z-10 overflow-hidden"
+        ref={bgWrapRef}
+        className="absolute top-0 -z-10 overflow-hidden"
         style={{
           left: "50%",
           right: "50%",
           marginLeft: "-50vw",
           marginRight: "-50vw",
           width: "100vw",
+          bottom: `-${config.waveOverflowY}px`,
         }}
       >
         <Image
@@ -87,13 +95,15 @@ export function HeroConfigurator() {
 
       {/* Foreground cutout — same position as bg, layered above heading */}
       <div
-        className="pointer-events-none absolute inset-y-0 z-20 overflow-hidden"
+        ref={fgWrapRef}
+        className="pointer-events-none absolute top-0 z-20 overflow-hidden"
         style={{
           left: "50%",
           right: "50%",
           marginLeft: "-50vw",
           marginRight: "-50vw",
           width: "100vw",
+          bottom: `-${config.waveOverflowY}px`,
         }}
       >
         <Image
@@ -205,44 +215,33 @@ export function HeroConfigurator() {
               gap: `${config.buttonGap}px`,
             }}
           >
-            <div className="relative inline-flex flex-col items-center">
-              <Link
-                href="/cennik"
-                className="relative z-10 inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-primary font-medium leading-none text-primary-foreground transition-colors hover:bg-primary/90"
-                style={{
-                  fontSize: `${config.buttonFontSize}px`,
-                  padding: `${config.buttonPaddingY + 1}px ${config.buttonPaddingX}px ${config.buttonPaddingY - 1}px`,
-                  borderRadius: `${config.buttonRadius}px`,
-                }}
-              >
-                Chcę pszczoły!
-              </Link>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 201.126 74.676"
-                aria-hidden="true"
-                className="pointer-events-none absolute"
-                style={{
-                  top: `calc(100% - ${config.dripOffset}px)`,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: `calc(100% - ${config.dripInset * 2}px)`,
-                  color: "var(--primary)",
-                }}
-              >
-                <path d="M0,0S16.706,0,22.647,8.912s8.912,11.882,14.853,2.97,7.151-8.911,19.913-8.911,18.7,8.911,18.7,20.794S70.3,42.216,73.267,51.127s11.882,8.912,11.882-2.97-3.09-15.481-3.09-24.392S84.526,2.971,93.689,2.971s24.016,8.911,35.9,8.911,14.853-8.911,32.676-8.911,17.824,17.823,23.765,17.823S195.059,0,201,0Z" fill="currentColor" />
-              </svg>
-            </div>
             <Link
-              href="/o-nas"
-              className="inline-flex items-center justify-center whitespace-nowrap text-trim-cap border border-border bg-background/80 font-medium leading-none backdrop-blur-sm transition-colors hover:bg-accent"
+              href="/cennik"
+              className="group inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-primary font-medium leading-none text-primary-foreground transition-colors hover:bg-primary"
               style={{
                 fontSize: `${config.buttonFontSize}px`,
                 padding: `${config.buttonPaddingY + 1}px ${config.buttonPaddingX}px ${config.buttonPaddingY - 1}px`,
-                borderRadius: `${config.buttonRadius}px`,
+                borderRadius: "9999px",
+              }}
+            >
+              Chcę pszczoły!
+              <span aria-hidden className="inline-flex w-0 items-center overflow-hidden transition-[width,opacity,padding] duration-200 ease-out opacity-0 group-hover:w-10 group-hover:pl-2 group-hover:opacity-100">
+                <MoveRight className="size-6 shrink-0 -translate-x-1 transition-transform duration-200 ease-out group-hover:translate-x-0" />
+              </span>
+            </Link>
+            <Link
+              href="/o-nas"
+              className="group inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-secondary font-medium leading-none text-secondary-foreground transition-colors hover:bg-secondary"
+              style={{
+                fontSize: `${config.buttonFontSize}px`,
+                padding: `${config.buttonPaddingY + 1}px ${config.buttonPaddingX}px ${config.buttonPaddingY - 1}px`,
+                borderRadius: "9999px",
               }}
             >
               Dowiedz się więcej
+              <span aria-hidden className="inline-flex w-0 items-center overflow-hidden transition-[width,opacity,padding] duration-200 ease-out opacity-0 group-hover:w-10 group-hover:pl-2 group-hover:opacity-100">
+                <MoveRight className="size-6 shrink-0 -translate-x-1 transition-transform duration-200 ease-out group-hover:translate-x-0" />
+              </span>
             </Link>
           </div>
         </div>
@@ -356,47 +355,44 @@ export function HeroConfigurator() {
             paddingRight: `${config.mobilePaddingX}px`,
           }}
         >
-          <div className="relative inline-flex flex-col items-center">
-            <Link
-              href="/cennik"
-              className="relative z-10 inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-primary font-medium leading-none text-primary-foreground transition-colors hover:bg-primary/90"
-              style={{
-                fontSize: `${config.mobileButtonFontSize}px`,
-                padding: `${config.mobileButtonPaddingY + 1}px ${config.mobileButtonPaddingX}px ${config.mobileButtonPaddingY - 1}px`,
-                borderRadius: `${config.mobileButtonRadius}px`,
-              }}
-            >
-              Chcę pszczoły!
-            </Link>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 201.126 74.676"
-              aria-hidden="true"
-              className="pointer-events-none absolute"
-              style={{
-                top: `calc(100% - ${config.dripOffset}px)`,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: `calc(100% - ${config.dripInset * 2}px)`,
-                color: "var(--primary)",
-              }}
-            >
-              <path d="M0,0S16.706,0,22.647,8.912s8.912,11.882,14.853,2.97,7.151-8.911,19.913-8.911,18.7,8.911,18.7,20.794S70.3,42.216,73.267,51.127s11.882,8.912,11.882-2.97-3.09-15.481-3.09-24.392S84.526,2.971,93.689,2.971s24.016,8.911,35.9,8.911,14.853-8.911,32.676-8.911,17.824,17.823,23.765,17.823S195.059,0,201,0Z" fill="currentColor" />
-            </svg>
-          </div>
           <Link
-            href="/o-nas"
-            className="inline-flex items-center justify-center whitespace-nowrap text-trim-cap border border-border bg-background/80 font-medium leading-none backdrop-blur-sm transition-colors hover:bg-accent"
+            href="/cennik"
+            className="group inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-primary font-medium leading-none text-primary-foreground transition-colors hover:bg-primary"
             style={{
               fontSize: `${config.mobileButtonFontSize}px`,
               padding: `${config.mobileButtonPaddingY + 1}px ${config.mobileButtonPaddingX}px ${config.mobileButtonPaddingY - 1}px`,
-              borderRadius: `${config.mobileButtonRadius}px`,
+              borderRadius: "9999px",
+            }}
+          >
+            Chcę pszczoły!
+            <span aria-hidden className="inline-flex w-0 items-center overflow-hidden transition-[width,opacity,padding] duration-200 ease-out opacity-0 group-hover:w-10 group-hover:pl-2 group-hover:opacity-100">
+              <MoveRight className="size-6 shrink-0 -translate-x-1 transition-transform duration-200 ease-out group-hover:translate-x-0" />
+            </span>
+          </Link>
+          <Link
+            href="/o-nas"
+            className="group inline-flex items-center justify-center whitespace-nowrap text-trim-cap bg-secondary font-medium leading-none text-secondary-foreground transition-colors hover:bg-secondary"
+            style={{
+              fontSize: `${config.mobileButtonFontSize}px`,
+              padding: `${config.mobileButtonPaddingY + 1}px ${config.mobileButtonPaddingX}px ${config.mobileButtonPaddingY - 1}px`,
+              borderRadius: "9999px",
             }}
           >
             Dowiedz się więcej
+            <span aria-hidden className="inline-flex w-0 items-center overflow-hidden transition-[width,opacity,padding] duration-200 ease-out opacity-0 group-hover:w-10 group-hover:pl-2 group-hover:opacity-100">
+              <MoveRight className="size-6 shrink-0 -translate-x-1 transition-transform duration-200 ease-out group-hover:translate-x-0" />
+            </span>
           </Link>
         </div>
       </div>
+
+      {/* Animated wave clip — carves a wavy bottom edge into the hero images */}
+      <HeroWave
+        targets={[bgWrapRef, fgWrapRef]}
+        height={config.waveHeight}
+        speed={config.waveSpeed}
+        centerOffsetY={config.waveCenterOffsetY}
+      />
     </section>
   );
 }

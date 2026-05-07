@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { AnimatedHeading } from "@/components/animated-heading";
 import { FaqItem } from "@/components/faq-item";
 import { HeroConfigurator } from "@/components/hero-configurator";
 import { PrezentSection } from "@/components/prezent-section";
 import { ComparisonTable } from "@/components/comparison-table";
+import { DlaczegoZdrowyCta } from "@/components/dlaczego-zdrowy-cta";
 import { JakToDzialaWireframe } from "@/components/jak-to-dziala-wireframe";
 import { TaryfySection } from "@/components/taryfy-section";
 import { TimelineSection } from "@/components/timeline-section";
@@ -253,7 +253,7 @@ export default function HomePage() {
       {/* Content sections */}
       <div className="relative z-10">
         {/* Co odróżnia nasz miód */}
-        <section className="container-page py-24">
+        <section className="container-page py-12">
           <AnimatedHeading
             line1="Co Odróżnia"
             line2Before="Nasz"
@@ -266,16 +266,10 @@ export default function HomePage() {
             rightLabel="Miód z BeeMiodzio"
           />
 
-          <div className="mt-8 text-center">
-            <Link
-              href="/dlaczego-miod-jest-zdrowy"
-              className="inline-block text-sm font-medium underline underline-offset-4 hover:text-foreground/80"
-            >
-              Dowiedz się więcej o właściwościach zdrowotnych miodu &rarr;
-            </Link>
-          </div>
-
         </section>
+
+        {/* Dlaczego miód jest zdrowy — CTA */}
+        <DlaczegoZdrowyCta />
 
         {/* Co i kiedy dostaniesz */}
         <TimelineSection steps={timelineSteps} />

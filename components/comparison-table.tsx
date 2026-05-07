@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Check, X } from "lucide-react";
+import { Check, HelpCircle, Slash } from "lucide-react";
 import { Fragment, useRef, useState, useEffect, type ReactNode } from "react";
 
 type Row = {
@@ -60,24 +60,43 @@ function Tooltip({ trigger, info, font }: { trigger: ReactNode; info: ReactNode;
   );
 }
 
-function renderCell(value: ReactNode, tone: "bad" | "good") {
+function GoodCell({ value }: { value: ReactNode }) {
   if (value === "✓") {
     return (
-      <Check
+      <span
         aria-label="tak"
-        className="mx-auto h-7 w-7 stroke-[2.5] text-emerald-600 md:h-8 md:w-8"
-      />
+        className="mx-auto flex h-7 w-7 items-center justify-center rounded-full md:h-9 md:w-9"
+        style={{ backgroundColor: "#F3BB11" }}
+      >
+        <Check className="h-4 w-4 stroke-[3] text-zinc-900 md:h-5 md:w-5" />
+      </span>
     );
   }
+  return <>{value}</>;
+}
+
+function BadCell({ value }: { value: ReactNode }) {
   if (value === "✗") {
     return (
-      <X
+      <span
         aria-label="nie"
-        className="mx-auto h-7 w-7 stroke-[2.5] text-red-600 md:h-8 md:w-8"
-      />
+        className="mx-auto flex h-7 w-7 items-center justify-center rounded-full border-2 border-foreground/25 md:h-9 md:w-9"
+      >
+        <Slash className="h-3.5 w-3.5 stroke-[2] text-foreground/40 md:h-4 md:w-4" />
+      </span>
     );
   }
-  return value;
+  if (value === "✓") {
+    return (
+      <span
+        aria-label="tak"
+        className="mx-auto flex h-7 w-7 items-center justify-center rounded-full border-2 border-foreground/25 md:h-9 md:w-9"
+      >
+        <HelpCircle className="h-3.5 w-3.5 stroke-[2] text-foreground/40 md:h-4 md:w-4" />
+      </span>
+    );
+  }
+  return <span className="text-muted-foreground">{value}</span>;
 }
 
 export function ComparisonTable({
@@ -90,93 +109,80 @@ export function ComparisonTable({
   rightLabel: string;
 }) {
   return (
-    <div className="relative mx-auto py-11 md:max-w-[70%]">
-      {/* Light yellow fill behind the winner column */}
+    <div className="relative mx-auto py-2 md:max-w-[82%]">
+      {/* Soft yellow highlight panel behind the winner (middle) column.
+          Mobile (grid-cols-3): col 2 spans 33.333%–66.666%.
+          Desktop (1.5fr 1fr 1fr, sum 3.5fr): col 2 spans 42.857%–71.428%. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-1/3 rounded-3xl bg-gradient-to-b from-yellow-50/30 via-amber-50/60 to-amber-100/80"
+        className="pointer-events-none absolute inset-y-0 left-1/3 w-1/3 rounded-[2rem] md:left-[42.857%] md:w-[28.571%]"
+        style={{ backgroundColor: "#FBE891" }}
       />
 
-      {/* Rounded dashed ring around the winner (right) column */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-1/3 rounded-3xl border-2 border-dashed border-foreground/40"
-      />
-
-      {/* Vertical divider between col 1 (attribute) and col 2 — matches ring height */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-1/3 w-0 border-l-2 border-dashed border-foreground/40"
-      />
-
-      <div className="relative grid grid-cols-3">
-        {/* Product mockup row (no borders) */}
+      <div className="relative grid grid-cols-3 md:grid-cols-[1.5fr_1fr_1fr]">
+        {/* Product mockup row */}
         <div />
-        <div className="flex items-end justify-center p-4">
-          <Image
-            src="/miod-z-polki.png"
-            alt="Anonimowy słoik z półki"
-            width={200}
-            height={200}
-            className="h-32 w-auto"
-            style={{ filter: "brightness(0) invert(0.6)" }}
-          />
-        </div>
-        <div className="flex items-end justify-center p-4">
+        <div className="flex h-36 items-end justify-center px-4 pt-2 pb-2 md:h-44">
           <Image
             src="/sloik-beemiodzio.png"
             alt="Słoik miodu BeeMiodzio"
             width={520}
             height={749}
-            className="h-auto w-28"
+            className="h-full w-auto object-contain"
+          />
+        </div>
+        <div className="flex h-36 items-end justify-center px-4 pt-2 pb-2 md:h-44">
+          <Image
+            src="/miod-z-polki.png"
+            alt="Anonimowy słoik z półki"
+            width={200}
+            height={200}
+            className="h-[78%] w-auto object-contain"
+            style={{ filter: "brightness(0) invert(0.72)" }}
           />
         </div>
 
-        {/* Column-header label row (no dividers above/below — below comes from first data divider) */}
+        {/* Pill-shaped column labels */}
         <div />
-        <div className="p-3 text-center text-lg font-heading text-muted-foreground">
-          {leftLabel}
+        <div className="flex justify-center pb-4">
+          <span
+            className="rounded-full px-4 py-1.5 text-sm font-medium text-zinc-900"
+            style={{ backgroundColor: "#F3BB11" }}
+          >
+            {rightLabel}
+          </span>
         </div>
-        <div className="p-3 text-center text-lg font-heading text-foreground">
-          {rightLabel}
+        <div className="flex justify-center pb-4">
+          <span className="rounded-full bg-foreground/10 px-4 py-1.5 text-sm font-medium text-foreground/60">
+            {leftLabel}
+          </span>
         </div>
 
-        {/* Data rows, each preceded by a full-width divider that bleeds left+right past the grid */}
+        {/* Data rows with solid thin separators */}
         {rows.map((row, i) => (
           <Fragment key={i}>
             <div
               aria-hidden
-              className="col-span-3 border-t-2 border-dashed border-foreground/40"
-              style={{
-                marginLeft: "calc(-1 * var(--page-px))",
-                marginRight: "calc(-0.4 * var(--page-px))",
-              }}
+              className="col-span-3 border-t border-foreground/15"
             />
-            <div className="flex items-center px-3 py-5 text-xs font-medium leading-snug md:text-sm">
+            <div className="flex items-center px-3 py-3 text-sm font-medium leading-snug md:text-base">
               {row.attribute}
             </div>
-            <div className="flex items-center justify-center px-3 py-5 text-center text-xs text-muted-foreground md:text-sm">
-              {row.badInfo
-                ? <Tooltip trigger={row.bad} info={row.badInfo} />
-                : renderCell(row.bad, "bad")}
-            </div>
-            <div className="flex items-center justify-center px-3 py-5 text-center text-xs font-semibold md:text-sm">
+            <div className="flex items-center justify-center px-3 py-3 text-center text-sm font-medium md:text-base">
               {row.goodInfo
                 ? <Tooltip trigger={row.good} info={row.goodInfo} font="font-normal" />
-                : renderCell(row.good, "good")}
+                : <GoodCell value={row.good} />}
+            </div>
+            <div className="flex items-center justify-center px-3 py-3 text-center text-sm md:text-base">
+              {row.badInfo
+                ? <Tooltip trigger={row.bad} info={row.badInfo} />
+                : <BadCell value={row.bad} />}
             </div>
           </Fragment>
         ))}
 
-        {/* Bottom bleed divider */}
-        <div
-          aria-hidden
-          className="col-span-3 border-t-2 border-dashed border-foreground/40"
-          style={{
-            marginLeft: "calc(-1 * var(--page-px))",
-            marginRight: "calc(-0.4 * var(--page-px))",
-          }}
-        />
+        {/* Bottom spacer so the yellow highlight panel extends past the last row (no bottom separator). */}
+        <div className="col-span-3 h-2" />
       </div>
     </div>
   );

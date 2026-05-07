@@ -16,11 +16,13 @@ export function SiteHeader() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 bg-transparent h-[82px] lg:h-[152px]">
+    <header className="pointer-events-none sticky top-0 z-40 bg-transparent h-[82px] lg:h-[152px]">
       <nav className="container-page flex items-start justify-between py-4">
 
-        <LogoLink scrolled={scrolled} />
-        <div className="flex items-center gap-6 text-sm">
+        <div className="pointer-events-auto">
+          <LogoLink scrolled={scrolled} />
+        </div>
+        <div className="pointer-events-auto flex items-center gap-6 text-sm">
           <Link
             href="/na-prezent"
             className="font-medium text-white transition-opacity hover:opacity-80"

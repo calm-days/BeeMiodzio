@@ -64,16 +64,16 @@ export function TimelineSection({ steps }: Props) {
 
   if (!flags.animations) {
     return (
-      <section className="bg-[#F3BB11] py-20">
+      <section className="bg-primary py-20">
         <div className="container-page relative">
-          <h2 className="mb-12 font-heading text-3xl tracking-tight text-white md:text-4xl">
+          <h2 className="mb-12 font-heading text-3xl tracking-tight text-primary-foreground md:text-4xl">
             Co i kiedy otrzymasz
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {steps.map((step, i) => (
               <div key={step.label} className="rounded-2xl bg-white p-5">
                 <div className="mb-3 flex items-center gap-3">
-                  <span className="bg-[#F3BB11] px-2 py-0.5 text-xs font-bold text-white">
+                  <span className="bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <p className="text-sm font-bold uppercase tracking-wide text-neutral-900">
@@ -100,7 +100,7 @@ export function TimelineSection({ steps }: Props) {
       style={{ height: `${travel}px` }}
       className="relative"
     >
-      <div className="sticky top-0 flex h-dvh flex-col overflow-hidden bg-[#F3BB11]">
+      <div className="sticky top-0 flex h-dvh flex-col overflow-hidden bg-primary">
         {/* Giant background text */}
         <div
           className="pointer-events-none absolute inset-0 flex flex-col justify-center overflow-hidden select-none"
@@ -120,10 +120,10 @@ export function TimelineSection({ steps }: Props) {
         {/* Brand label — top */}
         <div className="container-page relative z-20 pt-12">
           <p
-            className="font-semibold tracking-[0.3em] text-white uppercase"
+            className="font-semibold tracking-[0.3em] text-primary-foreground uppercase"
             style={{ fontSize: `${config.labelSize}px` }}
           >
-            BeeMiodzio
+            Chodź, pokażemy Ci wszystko krok po kroku!
           </p>
         </div>
 
@@ -159,7 +159,7 @@ export function TimelineSection({ steps }: Props) {
                   {step.label}
                 </h3>
                 <div className="relative mb-4">
-                  <span className="absolute -left-1 -top-1 z-10 inline-flex items-center bg-[#F3BB11] px-2.5 py-1 text-xs font-bold text-white">
+                  <span className="absolute -left-1 -top-1 z-10 inline-flex items-center bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="relative aspect-[4/3] w-full overflow-hidden rounded-sm bg-neutral-200">
@@ -182,10 +182,10 @@ export function TimelineSection({ steps }: Props) {
         {/* Brand label — bottom */}
         <div className="container-page relative z-20 pb-10 text-right">
           <p
-            className="font-semibold tracking-[0.3em] text-white uppercase"
+            className="font-semibold tracking-[0.3em] text-primary-foreground uppercase"
             style={{ fontSize: `${config.labelSize}px` }}
           >
-            Twój ul. Twój miód.
+            Od zakupu do słoika
           </p>
         </div>
       </div>

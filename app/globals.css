@@ -4,16 +4,16 @@
 
 
 @font-face {
-  font-family: "Homie";
-  src: url("./fonts/homie-variable.woff2") format("woff2");
+  font-family: "BMDisplay";
+  src: url("./fonts/display.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Neue Tarasque";
-  src: url("./fonts/neue-tarasque-variable.woff2") format("woff2");
+  font-family: "BMBody";
+  src: url("./fonts/body.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -64,25 +64,25 @@
 }
 
 :root {
-  --background: oklch(0.985 0.002 90);
-  --foreground: oklch(0.145 0.005 90);
+  --background: #F5F0E5;
+  --foreground: #3E2723;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0.005 90);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0.005 90);
-  --primary: oklch(0.82 0.165 86.35);
-  --primary-foreground: oklch(0.16 0.01 86);
-  --secondary: oklch(0.94 0.03 130);
-  --secondary-foreground: oklch(0.25 0.04 130);
+  --primary: #FFBE00;
+  --primary-foreground: #251F20;
+  --secondary: #F5F0E5;
+  --secondary-foreground: #3E2723;
   --muted: oklch(0.96 0.005 90);
-  --muted-foreground: oklch(0.5 0.01 90);
-  --accent: oklch(0.94 0.03 130);
-  --accent-foreground: oklch(0.25 0.04 130);
+  --muted-foreground: #3E2723;
+  --accent: #F5F0E5;
+  --accent-foreground: #3E2723;
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.9 0.01 90);
   --input: oklch(0.9 0.01 90);
-  --ring: oklch(0.82 0.165 86.35);
-  --chart-1: oklch(0.82 0.165 86.35);
+  --ring: #FFBE00;
+  --chart-1: #FFBE00;
   --chart-2: oklch(0.65 0.15 130);
   --chart-3: oklch(0.55 0.12 50);
   --chart-4: oklch(0.7 0.1 200);
@@ -90,12 +90,12 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.97 0.005 90);
   --sidebar-foreground: oklch(0.145 0.005 90);
-  --sidebar-primary: oklch(0.82 0.165 86.35);
-  --sidebar-primary-foreground: oklch(0.16 0.01 86);
-  --sidebar-accent: oklch(0.94 0.03 130);
-  --sidebar-accent-foreground: oklch(0.25 0.04 130);
+  --sidebar-primary: #FFBE00;
+  --sidebar-primary-foreground: #251F20;
+  --sidebar-accent: #F5F0E5;
+  --sidebar-accent-foreground: #3E2723;
   --sidebar-border: oklch(0.9 0.01 90);
-  --sidebar-ring: oklch(0.82 0.165 86.35);
+  --sidebar-ring: #FFBE00;
 }
 
 .dark {
@@ -105,8 +105,8 @@
   --card-foreground: oklch(0.96 0.005 90);
   --popover: oklch(0.2 0.008 90);
   --popover-foreground: oklch(0.96 0.005 90);
-  --primary: oklch(0.85 0.165 86.35);
-  --primary-foreground: oklch(0.16 0.01 86);
+  --primary: #FFBE00;
+  --primary-foreground: #251F20;
   --secondary: oklch(0.26 0.015 90);
   --secondary-foreground: oklch(0.96 0.005 90);
   --muted: oklch(0.26 0.015 90);
@@ -116,20 +116,20 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.85 0.165 86.35);
-  --chart-1: oklch(0.85 0.165 86.35);
+  --ring: #FFBE00;
+  --chart-1: #FFBE00;
   --chart-2: oklch(0.65 0.15 130);
   --chart-3: oklch(0.55 0.12 50);
   --chart-4: oklch(0.7 0.1 200);
   --chart-5: oklch(0.6 0.08 300);
   --sidebar: oklch(0.2 0.008 90);
   --sidebar-foreground: oklch(0.96 0.005 90);
-  --sidebar-primary: oklch(0.85 0.165 86.35);
-  --sidebar-primary-foreground: oklch(0.16 0.01 86);
+  --sidebar-primary: #FFBE00;
+  --sidebar-primary-foreground: #251F20;
   --sidebar-accent: oklch(0.26 0.015 90);
   --sidebar-accent-foreground: oklch(0.96 0.005 90);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.85 0.165 86.35);
+  --sidebar-ring: #FFBE00;
 }
 
 @layer base {
@@ -141,14 +141,14 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "Neue Tarasque", ui-sans-serif, system-ui, sans-serif;
+    font-family: "BMBody", ui-sans-serif, system-ui, sans-serif;
     font-weight: 400;
   }
 }
 
 @layer utilities {
   .font-heading {
-    font-family: "Homie", ui-sans-serif, system-ui, sans-serif;
+    font-family: "BMDisplay", ui-sans-serif, system-ui, sans-serif;
     font-weight: 700;
   }
 

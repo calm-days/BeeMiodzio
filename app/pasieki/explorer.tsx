@@ -456,9 +456,9 @@ function MapView({
       if (r.lat === null || r.lng === null) continue;
       const marker = L.circleMarker([r.lat, r.lng], {
         radius: 5,
-        color: "#b45309",
-        fillColor: "#f59e0b",
-        fillOpacity: 0.85,
+        color: "#3E2723",
+        fillColor: "#FFBE00",
+        fillOpacity: 0.55,
         weight: 1,
       });
       marker.bindTooltip(r.name, { direction: "top", offset: [0, -6] });
@@ -482,8 +482,8 @@ function MapView({
     for (const [id, marker] of markerByIdRef.current) {
       marker.setStyle(
         id === selectedId
-          ? { radius: 9, color: "#7c2d12", fillColor: "#fbbf24", fillOpacity: 1, weight: 2 }
-          : { radius: 5, color: "#b45309", fillColor: "#f59e0b", fillOpacity: 0.85, weight: 1 }
+          ? { radius: 9, color: "#251F20", fillColor: "#FFBE00", fillOpacity: 1, weight: 2 }
+          : { radius: 5, color: "#3E2723", fillColor: "#FFBE00", fillOpacity: 0.55, weight: 1 }
       );
     }
     if (selectedId === null) return;

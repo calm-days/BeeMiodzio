@@ -49,6 +49,12 @@ export interface HeroConfig {
   mobileButtonRadius: number;
   mobileButtonGap: number;
   mobileBzzSize: number;    // px — font size (position shared with desktop via bzzRight/bzzOffsetY/groundY)
+
+  // Hero wave (animated wavy bottom edge)
+  waveHeight: number;        // px — wave envelope height (controls amplitude; V = waveHeight * 0.3)
+  waveCenterOffsetY: number; // px — centerline Y offset from wrap bottom (negative = above bottom; trough dips ~|offset|+amplitude below this)
+  waveOverflowY: number;     // px — extra height bgWrap/fgWrap extend below the section so the wave's troughs are visible (not clipped)
+  waveSpeed: number;         // unitless — animation speed multiplier
 }
 
 export const defaultHeroConfig: HeroConfig = {
@@ -85,6 +91,10 @@ export const defaultHeroConfig: HeroConfig = {
   mobileButtonRadius: 12,
   mobileButtonGap: 12,
   mobileBzzSize: 16,
+  waveHeight: 120,
+  waveCenterOffsetY: -78,
+  waveOverflowY: 0,
+  waveSpeed: 0.5,
 };
 
 /* ────────────────────────────────────────────── */
@@ -154,24 +164,24 @@ export const defaultHeadingConfig: HeadingConfig = {
   stagger: 0.08,
   mediaDelay: 0.65,
   mediaDuration: 0.5,
-  mediaW: 2.8,
-  mediaH: 0.85,
-  mediaGap: 0.2,
+  mediaW: 4,
+  mediaH: 1.05,
+  mediaGap: 0.29,
   mediaRadius: 1.05,
   wordGap: 0.17,
-  marginBottom: 3.75,
-  scale: 6,
-  lineHeight: 0.9,
+  marginBottom: 1.5,
+  scale: 4.75,
+  lineHeight: 1.1,
   stiffness: 110,
   damping: 20,
   mass: 1,
-  mobileScale: 3.25,
-  mobileLineHeight: 0.95,
+  mobileScale: 3.75,
+  mobileLineHeight: 0.9,
   mobileMarginBottom: 2,
   mobileWordGap: 0.17,
   mobileMediaW: 2.5,
   mobileMediaH: 0.85,
-  mobileMediaGap: 0.2,
+  mobileMediaGap: 0.26,
   mobileMediaRadius: 0.6,
 };
 
@@ -357,21 +367,25 @@ export interface PrezentConfig {
   cardRadius: number;        // px
   titleSize: number;         // px
   bodySize: number;          // px
-  imageRatio: number;        // width/height
+  imageRatio: number;        // width/height (legacy — kept for backwards compat)
+  imageWidth: number;        // px — displayed image width (0 = auto, fills card)
+  imageHeight: number;       // px — displayed image height (0 = auto, preserves aspect)
 }
 
 export const defaultPrezentConfig: PrezentConfig = {
-  rotation: 9.5,
-  overlap: 11,
-  verticalOffset: 27,
-  horizontalOffset: 12,
-  sideWidth: 329,
-  centerWidth: 361,
+  rotation: 0,
+  overlap: 66,
+  verticalOffset: 20,
+  horizontalOffset: 44,
+  sideWidth: 460,
+  centerWidth: 520,
   cardPadding: 22,
   cardRadius: 16,
   titleSize: 19,
   bodySize: 15,
   imageRatio: 2,
+  imageWidth: 0,
+  imageHeight: 0,
 };
 
 /* ────────────────────────────────────────────── */
@@ -515,7 +529,7 @@ function Slider({
 /* ────────────────────────────────────────────── */
 
 type Section = "hero" | "heading" | "steps" | "jak" | "timeline" | "prezent" | "taryfy";
-type HeroTab = "heading" | "buttons" | "bzz" | "section" | "mobile";
+type HeroTab = "heading" | "buttons" | "bzz" | "section" | "wave" | "mobile";
 type TimelineTab = "text" | "cards" | "type";
 type HeadingTab = "type" | "media" | "timing" | "spring" | "mobile";
 type StepsTab = "layout" | "type";
@@ -829,6 +843,7 @@ function SettingsPanel() {
     { id: "buttons", label: "Btn" },
     { id: "bzz", label: "Bzz" },
     { id: "section", label: "Sec" },
+    { id: "wave", label: "Wave" },
     { id: "mobile", label: "Mob" },
   ];
 
@@ -939,6 +954,14 @@ function SettingsPanel() {
                   <>
                     <Slider label="Ground Y (opaque top)" value={hero.groundY} onChange={(v) => setH("groundY", v)} min={0} max={100} unit="%" />
                     <Slider label="Min height (desktop)" value={hero.sectionMinHeight} onChange={(v) => setH("sectionMinHeight", v)} min={0} max={200} unit="vh" />
+                  </>
+                )}
+                {heroTab === "wave" && (
+                  <>
+                    <Slider label="Amplitude (height)" value={hero.waveHeight} onChange={(v) => setH("waveHeight", v)} min={0} max={400} />
+                    <Slider label="Centerline Y offset" value={hero.waveCenterOffsetY} onChange={(v) => setH("waveCenterOffsetY", v)} min={-200} max={200} />
+                    <Slider label="Overflow below section" value={hero.waveOverflowY} onChange={(v) => setH("waveOverflowY", v)} min={0} max={300} />
+                    <Slider label="Speed" value={hero.waveSpeed} onChange={(v) => setH("waveSpeed", v)} min={0} max={4} step={0.05} unit="" />
                   </>
                 )}
                 {heroTab === "mobile" && (
@@ -1197,11 +1220,11 @@ function SettingsPanel() {
                 {prezentTab === "layout" && (
                   <>
                     <Slider label="Rotation" value={prezent.rotation} onChange={(v) => setPr("rotation", v)} min={0} max={15} step={0.5} unit="°" />
-                    <Slider label="Overlap" value={prezent.overlap} onChange={(v) => setPr("overlap", v)} min={0} max={80} />
-                    <Slider label="Vertical offset" value={prezent.verticalOffset} onChange={(v) => setPr("verticalOffset", v)} min={0} max={40} />
-                    <Slider label="Horizontal offset" value={prezent.horizontalOffset} onChange={(v) => setPr("horizontalOffset", v)} min={-60} max={60} />
-                    <Slider label="Side width" value={prezent.sideWidth} onChange={(v) => setPr("sideWidth", v)} min={200} max={400} />
-                    <Slider label="Center width" value={prezent.centerWidth} onChange={(v) => setPr("centerWidth", v)} min={240} max={440} />
+                    <Slider label="Overlap" value={prezent.overlap} onChange={(v) => setPr("overlap", v)} min={0} max={160} />
+                    <Slider label="Vertical offset" value={prezent.verticalOffset} onChange={(v) => setPr("verticalOffset", v)} min={0} max={80} />
+                    <Slider label="Horizontal offset" value={prezent.horizontalOffset} onChange={(v) => setPr("horizontalOffset", v)} min={-120} max={120} />
+                    <Slider label="Side width" value={prezent.sideWidth} onChange={(v) => setPr("sideWidth", v)} min={200} max={640} />
+                    <Slider label="Center width" value={prezent.centerWidth} onChange={(v) => setPr("centerWidth", v)} min={240} max={700} />
                   </>
                 )}
                 {prezentTab === "type" && (
@@ -1210,7 +1233,8 @@ function SettingsPanel() {
                     <Slider label="Card radius" value={prezent.cardRadius} onChange={(v) => setPr("cardRadius", v)} min={0} max={32} />
                     <Slider label="Title size" value={prezent.titleSize} onChange={(v) => setPr("titleSize", v)} min={12} max={28} />
                     <Slider label="Body size" value={prezent.bodySize} onChange={(v) => setPr("bodySize", v)} min={10} max={22} />
-                    <Slider label="Image ratio" value={prezent.imageRatio} onChange={(v) => setPr("imageRatio", v)} min={0.5} max={2} step={0.01} unit="" />
+                    <Slider label="Image width (0=auto)" value={prezent.imageWidth} onChange={(v) => setPr("imageWidth", v)} min={0} max={500} />
+                    <Slider label="Image height (0=auto)" value={prezent.imageHeight} onChange={(v) => setPr("imageHeight", v)} min={0} max={500} />
                   </>
                 )}
               </div>

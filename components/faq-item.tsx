@@ -7,7 +7,7 @@ export function FaqItem({ q, a }: { q: string; a: ReactNode }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-2xl bg-muted/50 backdrop-blur-sm">
+    <div className="rounded-2xl bg-white">
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex w-full cursor-pointer items-center justify-between gap-4 p-6 text-left font-heading text-lg tracking-tight"

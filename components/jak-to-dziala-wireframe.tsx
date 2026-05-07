@@ -222,7 +222,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
 
   return (
     <section className="relative py-24">
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-x-0 bottom-0 -top-[200px] -z-20 overflow-hidden">
         <Image
           src="/jak-to-dziala-bg2.png"
           alt=""
@@ -232,7 +232,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
           aria-hidden
         />
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-b from-transparent to-[oklch(0.985_0.002_90)]" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-b from-transparent to-[var(--background)]" />
       <div className="container-page relative">
       <div className="relative">
         <BeeTrail />

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { usePrezentConfig } from "@/components/section-config";
@@ -7,15 +8,18 @@ import { usePrezentConfig } from "@/components/section-config";
 const gifts = [
   {
     label: "Dla kogoś, kto ma już wszystko",
-    desc: "Udział w ulu, kamery na żywo i miód pod drzwi",
+    desc: "Coś co będzie wspominał przez lata. Własny ul i prawdziwy miód — z jego imieniem na etykiecie.",
+    image: "/prezent/1.png",
   },
   {
     label: "Dla dziecka",
-    desc: "Certyfikat pszczelarza i przygoda na cały rok",
+    desc: "Najlepsza lekcja przyrody, jaką można mieć. Obserwują, kibicują, a jesienią dostają słoiczek z miodem — od swoich pszczół!",
+    image: "/prezent/2.png",
   },
   {
     label: "Dla mamy lub taty",
-    desc: "Hobby bez wysiłku — ogląda, kibicuje, dostaje miód",
+    desc: "Dzieci wyleciały z gniazda. Czas zadbać o kogoś innego. Nowe hobby, poczucie troski i zapas prawdziwego miodu na co dzień.",
+    image: "/prezent/3.png",
   },
 ];
 
@@ -24,17 +28,17 @@ export function PrezentSection() {
 
   return (
     <section className="container-page py-24">
-      <h2 className="mb-4 text-center font-heading text-3xl tracking-tight md:text-4xl">
+      <h2 className="mb-4 text-center font-heading text-5xl tracking-tight md:text-6xl">
         Prezent, który trwa cały rok
       </h2>
 
-      <p className="mx-auto mb-16 max-w-md text-center text-muted-foreground">
+      <p className="mx-auto mb-6 max-w-2xl text-center">
         Podaruj udział w ulu — z certyfikatem, kamerami i miodem na koniec
         sezonu
       </p>
 
       {/* Fanned cards — desktop transforms via inline styles, mobile stacks */}
-      <div className="mx-auto flex max-w-3xl flex-col items-stretch gap-4 md:flex-row md:items-center md:justify-center md:gap-0">
+      <div className="mx-auto flex max-w-6xl flex-col items-stretch gap-4 md:flex-row md:items-center md:justify-center md:gap-0">
         {gifts.map((gift, i) => {
           const isCenter = i === 1;
           const isLeft = i === 0;
@@ -54,12 +58,22 @@ export function PrezentSection() {
           return (
             <div
               key={gift.label}
-              className="relative rounded-2xl border bg-card p-6 shadow-lg max-md:!w-full max-md:!transform-none max-md:!m-0"
+              className="relative max-md:!w-full max-md:!transform-none max-md:!m-0"
               style={desktopStyle}
             >
-              <div
-                className="mb-3 w-full rounded-xl bg-muted"
-                style={{ aspectRatio: `${c.imageRatio}` }}
+              <Image
+                src={gift.image}
+                alt={gift.label}
+                width={1200}
+                height={967}
+                quality={95}
+                className="mb-3"
+                style={{
+                  width: c.imageWidth > 0 ? `${c.imageWidth}px` : "100%",
+                  height: c.imageHeight > 0 ? `${c.imageHeight}px` : "auto",
+                  objectFit: c.imageWidth > 0 && c.imageHeight > 0 ? "contain" : undefined,
+                }}
+                sizes="(min-width: 768px) 720px, 100vw"
               />
               <p
                 className="font-heading tracking-tight"
@@ -68,7 +82,7 @@ export function PrezentSection() {
                 {gift.label}
               </p>
               <p
-                className="mt-1 text-muted-foreground"
+                className="mt-1"
                 style={{ fontSize: `${c.bodySize}px` }}
               >
                 {gift.desc}
@@ -78,12 +92,23 @@ export function PrezentSection() {
         })}
       </div>
 
-      <div className="mt-12 flex items-center justify-center gap-3">
-        <Button variant="outline" size="lg" render={<Link href="/prezent" />}>
-          Dowiedz się więcej
-        </Button>
-        <Button size="lg" render={<Link href="/checkout" />}>
+      <div className="mt-4 flex items-center justify-center gap-3">
+        <Button
+          size="lg"
+          arrow
+          className="h-14 px-10 text-base"
+          render={<Link href="/checkout" />}
+        >
           Podaruj ul
+        </Button>
+        <Button
+          variant="secondary"
+          size="lg"
+          arrow
+          className="h-14 px-10 text-base shadow-[inset_0_0_0_1px_var(--foreground)]"
+          render={<Link href="/prezent" />}
+        >
+          Dowiedz się więcej
         </Button>
       </div>
     </section>
