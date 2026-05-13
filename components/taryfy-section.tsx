@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTaryfyConfig } from "@/components/section-config";
@@ -16,6 +17,11 @@ interface Plan {
 
 const KLARNA_PINK = "#FFA8CD";
 const ACCENT_GREEN = "#3BA56B";
+const ACCENT_AMBER = "#C68A14";
+const CARD_BG = "#FFF4D2";
+
+const HIVE_IMAGES = ["/taryfy/1:8.png", "/taryfy/1:3.png", "/taryfy/caly.png"] as const;
+const TIER_MIN_HEIGHT = [620, 680, 740] as const;
 
 function CheckIcon() {
   return (
@@ -48,200 +54,146 @@ function KlarnaBadge() {
   );
 }
 
-function BestSellerBadge() {
-  return (
-    <div
-      className="pointer-events-none absolute left-1/2 top-0 z-30"
-      style={{ transform: "translate(-50%, -52%) rotate(-4deg)" }}
-      aria-label="Bestseller"
-    >
-      <Image
-        src="/bestseller-badge.png"
-        alt="Bestseller"
-        width={70}
-        height={82}
-        className="object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.15)]"
-        priority
-      />
-    </div>
-  );
-}
-
-function DripShape({
-  height,
-  fill,
-  fillOpacity,
-}: {
-  height: number;
-  fill: string;
-  fillOpacity?: number;
-}) {
-  // Use the honey drip image as a CSS mask, fill with the requested color.
-  // The negative marginTop pulls the drip up so its solid top edge overlaps
-  // the card body above, eliminating any sub-pixel seam.
+function Divider() {
   return (
     <div
       aria-hidden="true"
-      style={{
-        height,
-        width: "100%",
-        marginTop: -1,
-        backgroundColor: fill,
-        opacity: fillOpacity,
-        WebkitMaskImage: "url(/honey-drip-mask.png)",
-        maskImage: "url(/honey-drip-mask.png)",
-        WebkitMaskRepeat: "no-repeat",
-        maskRepeat: "no-repeat",
-        WebkitMaskSize: "100% 100%",
-        maskSize: "100% 100%",
-        WebkitMaskPosition: "top center",
-        maskPosition: "top center",
-      }}
+      className="h-px w-full"
+      style={{ backgroundColor: ACCENT_AMBER, opacity: 0.55 }}
     />
   );
 }
 
-function DarkOverlay({
-  percent,
-  cardRadius,
-  dripHeight,
-}: {
-  percent: number;
-  cardRadius: number;
-  dripHeight: number;
-}) {
+function WybieramButton() {
   return (
-    <div
-      className="pointer-events-none absolute left-0 right-0 top-0 z-[1] flex flex-col"
-      style={{ height: `${percent}%` }}
-      aria-hidden="true"
+    <span
+      className="inline-flex items-center justify-center rounded-full border-[1.5px] border-foreground bg-transparent px-5 py-2.5 text-[15px] font-semibold leading-none text-foreground transition-colors group-hover/card:bg-foreground group-hover/card:text-[#FFF4D2]"
     >
-      <div
-        className="bg-primary"
-        style={{
-          flex: "1 1 0",
-          minHeight: 0,
-          borderRadius: `${cardRadius}px ${cardRadius}px 0 0`,
-        }}
-      />
-      <DripShape height={dripHeight} fill="var(--primary)" />
-    </div>
+      Wybieram!
+    </span>
   );
 }
 
-function PlanCard({ plan, tier }: { plan: Plan; tier: 1 | 2 | 3 }) {
+function PlanCard({ plan, tier }: { plan: Plan; tier: 0 | 1 | 2 }) {
   const [config] = useTaryfyConfig();
-  const overlayPercent = tier === 1 ? 25 : tier === 2 ? 33 : 100;
-  const hasBottomDrip = tier === 3;
+  const hiveSrc = HIVE_IMAGES[tier];
+  const tierMinHeight = TIER_MIN_HEIGHT[tier];
 
   return (
     <Link
       href="/checkout"
-      className="relative isolate block text-foreground transition-transform duration-300 hover:-translate-y-1"
+      className="group/card relative isolate flex flex-col min-h-[var(--card-mh-mobile)] text-foreground transition-transform duration-300 hover:-translate-y-1 md:min-h-[var(--card-mh-desktop)]"
+      style={{
+        borderRadius: `${config.cardRadius}px`,
+        backgroundColor: CARD_BG,
+        paddingLeft: config.cardPaddingX,
+        paddingRight: config.cardPaddingX,
+        paddingTop: config.cardPaddingTop,
+        paddingBottom: config.cardPaddingBottom,
+        "--card-mh-mobile": `${config.cardMinHeight}px`,
+        "--card-mh-desktop": `${tierMinHeight}px`,
+      } as CSSProperties}
     >
-      {plan.highlighted && <BestSellerBadge />}
-
-      {/* Layer 0: Light base — only for tiers 1 & 2; tier 3 is fully covered by DarkOverlay */}
-      {!hasBottomDrip && (
-        <div
-          className="pointer-events-none absolute inset-0 z-0"
-          aria-hidden="true"
-          style={{
-            backgroundColor: "var(--primary)",
-            opacity: 0.35,
-            borderRadius: `${config.cardRadius}px`,
-          }}
-        />
-      )}
-
-      {/* Layer 1: Dark overlay — same shape, variable height by tier */}
-      <DarkOverlay
-        percent={overlayPercent}
-        cardRadius={config.cardRadius}
-        dripHeight={config.dripHeight}
-      />
-
-      {/* Layer 10: Content */}
-      <div
-        className="relative z-10"
-        style={{
-          paddingLeft: config.cardPaddingX,
-          paddingRight: config.cardPaddingX,
-          paddingTop: config.cardPaddingTop,
-          paddingBottom: config.cardPaddingBottom + (hasBottomDrip ? config.dripHeight : 0),
-        }}
-      >
+      {/* Header: title + honey amount */}
+      <div className="flex flex-col items-start">
         <h3
-          className="font-heading leading-[1] tracking-tight"
+          className="font-heading leading-[0.95] tracking-tight"
           style={{ fontSize: config.titleSize }}
         >
           {plan.name}
         </h3>
         <p
-          className="mt-2 opacity-75"
-          style={{ fontSize: config.bodySize }}
+          className="mt-3 font-semibold leading-[1.3]"
+          style={{ fontSize: config.subtitleSize }}
         >
           {plan.honey}
         </p>
+      </div>
 
-        <p
-          className="mt-10 font-heading leading-[1] tracking-tight"
-          style={{ fontSize: config.priceSize }}
-        >
-          od {plan.price} zł
-        </p>
+      <div className="mt-4">
+        <Divider />
+      </div>
 
-        <div className="mt-4 flex items-end gap-2.5">
-          <p
-            className="flex-1 leading-[1.4]"
-            style={{ fontSize: config.bodySize - 1 }}
+      {/* Price block */}
+      <p
+        className="mt-5 font-bold leading-[1] tracking-tight"
+        style={{ fontSize: config.priceSize }}
+      >
+        od {plan.price} zł
+      </p>
+      <p
+        className="mt-3 leading-[1.4]"
+        style={{ fontSize: config.bodySize }}
+      >
+        Dalej {plan.renewal} · Zapłać <KlarnaBadge /> wygodnie na raty z Klarną
+      </p>
+
+      <div className="mt-5">
+        <Divider />
+      </div>
+
+      {/* Features list */}
+      <ul
+        className="mt-5 flex flex-col"
+        style={{ gap: config.featureGap }}
+      >
+        {plan.features.map((f) => (
+          <li
+            key={f}
+            className="flex items-start gap-2.5 leading-[1.35] font-semibold"
+            style={{ fontSize: config.bodySize }}
           >
-            Dalej {plan.renewal} · Zapłać wygodnie na raty z Klarną
-          </p>
-          <KlarnaBadge />
-        </div>
+            <CheckIcon />
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
 
-        <div className="my-5 border-t border-foreground/15" />
-
-        <ul
-          className="flex flex-col"
-          style={{ gap: config.featureGap }}
-        >
-          {plan.features.map((f) => (
-            <li
-              key={f}
-              className="flex items-start gap-2 leading-[1.35]"
-              style={{ fontSize: config.bodySize }}
-            >
-              <CheckIcon />
-              <span>{f}</span>
-            </li>
-          ))}
-        </ul>
-
-        {plan.extras && (
-          <>
-            <div className="my-4 border-t border-foreground/15" />
-            <p className="text-center text-[10px] font-bold uppercase tracking-[0.18em] opacity-70">
+      {plan.extras && (
+        <>
+          <div className="mt-5 flex items-center gap-3">
+            <div className="h-px flex-1" style={{ backgroundColor: ACCENT_AMBER, opacity: 0.55 }} />
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: ACCENT_AMBER }}>
               Dodatkowe korzyści
             </p>
-            <ul
-              className="mt-4 flex flex-col"
-              style={{ gap: config.featureGap }}
-            >
-              {plan.extras.map((f) => (
-                <li
-                  key={f}
-                  className="flex items-start gap-2 leading-[1.35]"
-                  style={{ fontSize: config.bodySize }}
-                >
-                  <CheckIcon />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+            <div className="h-px flex-1" style={{ backgroundColor: ACCENT_AMBER, opacity: 0.55 }} />
+          </div>
+          <ul
+            className="mt-4 flex flex-col"
+            style={{ gap: config.featureGap }}
+          >
+            {plan.extras.map((f) => (
+              <li
+                key={f}
+                className="flex items-start gap-2.5 leading-[1.35] font-semibold"
+                style={{ fontSize: config.bodySize }}
+              >
+                <CheckIcon />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {/* Footer: button + hive (fills remaining space) */}
+      <div
+        className="relative mt-auto flex items-end justify-between"
+        style={{ paddingTop: config.footerPaddingTop }}
+      >
+        <WybieramButton />
+        <div
+          className="relative shrink-0"
+          style={{ width: config.hiveSize, height: config.hiveSize }}
+        >
+          <Image
+            src={hiveSrc}
+            alt=""
+            fill
+            sizes={`${config.hiveSize}px`}
+            className="object-contain object-bottom"
+          />
+        </div>
       </div>
     </Link>
   );
@@ -249,22 +201,22 @@ function PlanCard({ plan, tier }: { plan: Plan; tier: 1 | 2 | 3 }) {
 
 export function TaryfySection({ plans }: { plans: Plan[] }) {
   return (
-    <section className="container-page py-24">
-      <h2 className="mb-16 text-center font-heading text-3xl tracking-tight md:text-4xl">
+    <section className="container-page pt-4 pb-24">
+      <h2 className="mb-10 text-center font-heading text-5xl tracking-tight md:text-6xl">
         Taryfy
       </h2>
 
-      <div className="mx-auto grid max-w-5xl items-start gap-6 md:grid-cols-3">
+      <div className="mx-auto grid max-w-5xl items-end gap-5 md:grid-cols-3">
         {plans.map((plan, idx) => (
           <PlanCard
             key={plan.name}
             plan={plan}
-            tier={(idx + 1) as 1 | 2 | 3}
+            tier={idx as 0 | 1 | 2}
           />
         ))}
       </div>
 
-      <p className="mt-10 text-center text-sm text-muted-foreground">
+      <p className="mt-10 text-center text-sm">
         Darmowa dostawa InPost w 1–3 dni.
       </p>
     </section>

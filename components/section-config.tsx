@@ -8,6 +8,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { Copy, RotateCcw, Settings, X } from "lucide-react";
 
 /* ────────────────────────────────────────────── */
 /*  Hero Config                                    */
@@ -393,27 +394,79 @@ export const defaultPrezentConfig: PrezentConfig = {
 /* ────────────────────────────────────────────── */
 
 export interface TaryfyConfig {
-  cardRadius: number;        // px — top corner radius of card
+  cardRadius: number;        // px — corner radius of card
   cardPaddingX: number;      // px — horizontal padding inside card
   cardPaddingTop: number;    // px — top padding inside card
-  cardPaddingBottom: number; // px — bottom padding inside card (above drip)
-  dripHeight: number;        // px — drip pattern height
+  cardPaddingBottom: number; // px — bottom padding inside card
+  cardMinHeight: number;     // px — minimum card height (for staircase visual)
   titleSize: number;         // px — plan name font size
+  subtitleSize: number;      // px — "Do X kg miodu rocznie" font size
   priceSize: number;         // px — price font size
   bodySize: number;          // px — body/feature text font size
   featureGap: number;        // px — gap between feature items
+  hiveSize: number;          // px — hive illustration width/height
+  footerPaddingTop: number;  // px — space above button/hive footer
 }
 
 export const defaultTaryfyConfig: TaryfyConfig = {
-  cardRadius: 36,
-  cardPaddingX: 30,
-  cardPaddingTop: 38,
-  cardPaddingBottom: 32,
-  dripHeight: 70,
-  titleSize: 44,
-  priceSize: 42,
+  cardRadius: 28,
+  cardPaddingX: 28,
+  cardPaddingTop: 32,
+  cardPaddingBottom: 28,
+  cardMinHeight: 540,
+  titleSize: 54,
+  subtitleSize: 13,
+  priceSize: 38,
   bodySize: 13,
-  featureGap: 11,
+  featureGap: 12,
+  hiveSize: 130,
+  footerPaddingTop: 32,
+};
+
+/* ────────────────────────────────────────────── */
+/*  Dlaczego Config (Why-honey CTA section)        */
+/* ────────────────────────────────────────────── */
+
+export interface DlaczegoDrawing {
+  offset: number;  // % from its anchored side
+  top: number;     // % from top
+  width: number;   // px
+}
+
+export interface DlaczegoCurve {
+  offset: number;  // % from its anchored side (negative bleeds outside)
+  top: number;     // % from top (50 = vertically centered)
+  width: number;   // % of section width
+}
+
+export interface DlaczegoConfig {
+  paddingY: number;        // px desktop vertical padding
+  paddingYMobile: number;  // px mobile vertical padding
+
+  lightbulb: DlaczegoDrawing;       // anchored left
+  flower: DlaczegoDrawing;          // anchored right
+  lineL: DlaczegoCurve;             // anchored left
+  lineR: DlaczegoCurve;             // anchored right
+
+  lightbulbMobile: DlaczegoDrawing;
+  flowerMobile: DlaczegoDrawing;
+  lineLMobile: DlaczegoCurve;
+  lineRMobile: DlaczegoCurve;
+}
+
+export const defaultDlaczegoConfig: DlaczegoConfig = {
+  paddingY: 112,
+  paddingYMobile: 56,
+
+  lightbulb: { offset: 24, top: 4, width: 106 },
+  flower: { offset: 25, top: 53, width: 121 },
+  lineL: { offset: 0, top: 50, width: 29 },
+  lineR: { offset: 0, top: 50, width: 31 },
+
+  lightbulbMobile: { offset: 4, top: 0, width: 58 },
+  flowerMobile: { offset: 4, top: 6, width: 60 },
+  lineLMobile: { offset: -10, top: 60, width: 55 },
+  lineRMobile: { offset: -10, top: 60, width: 60 },
 };
 
 /* ────────────────────────────────────────────── */
@@ -435,6 +488,8 @@ interface ConfigCtx {
   setPrezent: Dispatch<SetStateAction<PrezentConfig>>;
   taryfy: TaryfyConfig;
   setTaryfy: Dispatch<SetStateAction<TaryfyConfig>>;
+  dlaczego: DlaczegoConfig;
+  setDlaczego: Dispatch<SetStateAction<DlaczegoConfig>>;
 }
 
 const Ctx = createContext<ConfigCtx | null>(null);
@@ -481,6 +536,12 @@ export function useTaryfyConfig() {
   return [ctx.taryfy, ctx.setTaryfy] as const;
 }
 
+export function useDlaczegoConfig() {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("Wrap with SectionConfigProvider");
+  return [ctx.dlaczego, ctx.setDlaczego] as const;
+}
+
 /* ────────────────────────────────────────────── */
 /*  Slider                                         */
 /* ────────────────────────────────────────────── */
@@ -489,6 +550,7 @@ function Slider({
   label,
   value,
   onChange,
+  defaultValue,
   min,
   max,
   step = 1,
@@ -497,19 +559,64 @@ function Slider({
   label: string;
   value: number;
   onChange: (v: number) => void;
+  defaultValue?: number;
   min: number;
   max: number;
   step?: number;
   unit?: string;
 }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const display = draft ?? formatNum(value, step);
+  const showRevert = defaultValue !== undefined && !nearlyEqual(value, defaultValue, step);
+
+  const commit = (raw: string) => {
+    const n = Number(raw);
+    if (Number.isFinite(n)) {
+      const clamped = Math.max(min, Math.min(max, n));
+      const snapped = step ? Math.round(clamped / step) * step : clamped;
+      onChange(Number(snapped.toFixed(stepDecimals(step))));
+    }
+    setDraft(null);
+  };
+
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-300">{label}</span>
-        <span className="text-xs tabular-nums text-zinc-400">
-          {value}
-          {unit}
-        </span>
+    <div className="group/row flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate text-[11px] font-medium text-zinc-300">{label}</span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => defaultValue !== undefined && onChange(defaultValue)}
+            className={`rounded p-0.5 transition-opacity ${
+              showRevert
+                ? "text-zinc-500 opacity-0 group-hover/row:opacity-100 hover:bg-zinc-800 hover:text-zinc-200"
+                : "pointer-events-none opacity-0"
+            }`}
+            title={defaultValue !== undefined ? `Reset to ${formatNum(defaultValue, step)}${unit ?? ""}` : ""}
+            aria-label="Reset to default"
+            tabIndex={showRevert ? 0 : -1}
+          >
+            <RotateCcw className="size-3" />
+          </button>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={display}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={(e) => commit(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+              else if (e.key === "Escape") {
+                setDraft(null);
+                (e.target as HTMLInputElement).blur();
+              }
+            }}
+            className="w-12 rounded bg-zinc-800/70 px-1.5 py-0.5 text-right font-mono text-[11px] tabular-nums text-zinc-200 outline-none ring-1 ring-transparent transition-colors hover:bg-zinc-800 focus:bg-zinc-800 focus:ring-amber-500/40"
+          />
+          {unit !== "" && (
+            <span className="w-6 text-right font-mono text-[10px] uppercase text-zinc-500">{unit}</span>
+          )}
+        </div>
       </div>
       <input
         type="range"
@@ -518,23 +625,80 @@ function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-zinc-700 accent-amber-500"
+        className="h-1 w-full cursor-pointer appearance-none rounded-full bg-zinc-800 accent-amber-500"
       />
     </div>
   );
+}
+
+function stepDecimals(step: number) {
+  if (!Number.isFinite(step) || step >= 1) return 0;
+  const s = String(step);
+  const i = s.indexOf(".");
+  return i === -1 ? 0 : s.length - i - 1;
+}
+
+function formatNum(n: number, step: number) {
+  return n.toFixed(stepDecimals(step));
+}
+
+function nearlyEqual(a: number, b: number, step: number) {
+  const eps = step ? step / 2 : 1e-9;
+  return Math.abs(a - b) < eps;
 }
 
 /* ────────────────────────────────────────────── */
 /*  Settings Panel                                 */
 /* ────────────────────────────────────────────── */
 
-type Section = "hero" | "heading" | "steps" | "jak" | "timeline" | "prezent" | "taryfy";
+type Section = "hero" | "heading" | "steps" | "jak" | "timeline" | "prezent" | "taryfy" | "dlaczego";
+type DlaczegoTab = "desktop" | "mobile";
 type HeroTab = "heading" | "buttons" | "bzz" | "section" | "wave" | "mobile";
 type TimelineTab = "text" | "cards" | "type";
 type HeadingTab = "type" | "media" | "timing" | "spring" | "mobile";
 type StepsTab = "layout" | "type";
 type PrezentTab = "layout" | "type";
 type JakTab = "global" | "r1" | "r2" | "r3" | "r4";
+
+function SegmentedControl<T extends string | number>({
+  value,
+  options,
+  onChange,
+  className = "",
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+  className?: string;
+}) {
+  return (
+    <div className={`inline-flex rounded-md bg-zinc-800/60 p-0.5 ring-1 ring-inset ring-zinc-800 ${className}`}>
+      {options.map((opt) => (
+        <button
+          key={String(opt.value)}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${
+            value === opt.value
+              ? "bg-zinc-700/90 text-zinc-50 shadow-sm"
+              : "text-zinc-400 hover:text-zinc-200"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function FieldRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-[11px] font-medium text-zinc-300">{label}</span>
+      {children}
+    </div>
+  );
+}
 
 function AlignToggle({
   label,
@@ -545,26 +709,18 @@ function AlignToggle({
   value: JakAlign;
   onChange: (v: JakAlign) => void;
 }) {
-  const options: JakAlign[] = ["start", "center", "end"];
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-zinc-300">{label}</span>
-      <div className="flex gap-1">
-        {options.map((opt) => (
-          <button
-            key={opt}
-            onClick={() => onChange(opt)}
-            className={`flex-1 rounded px-2 py-1 text-[10px] font-medium transition-colors ${
-              value === opt
-                ? "bg-amber-500 text-zinc-900"
-                : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            {opt}
-          </button>
-        ))}
-      </div>
-    </div>
+    <FieldRow label={label}>
+      <SegmentedControl
+        value={value}
+        onChange={onChange}
+        options={[
+          { value: "start", label: "Start" },
+          { value: "center", label: "Center" },
+          { value: "end", label: "End" },
+        ]}
+      />
+    </FieldRow>
   );
 }
 
@@ -577,26 +733,17 @@ function OrderToggle({
   value: JakImageOrder;
   onChange: (v: JakImageOrder) => void;
 }) {
-  const options: JakImageOrder[] = ["before", "after"];
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-zinc-300">{label}</span>
-      <div className="flex gap-1">
-        {options.map((opt) => (
-          <button
-            key={opt}
-            onClick={() => onChange(opt)}
-            className={`flex-1 rounded px-2 py-1 text-[10px] font-medium transition-colors ${
-              value === opt
-                ? "bg-amber-500 text-zinc-900"
-                : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            {opt}
-          </button>
-        ))}
-      </div>
-    </div>
+    <FieldRow label={label}>
+      <SegmentedControl
+        value={value}
+        onChange={onChange}
+        options={[
+          { value: "before", label: "Before" },
+          { value: "after", label: "After" },
+        ]}
+      />
+    </FieldRow>
   );
 }
 
@@ -614,24 +761,16 @@ function BoolToggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-zinc-300">{label}</span>
-      <div className="flex gap-1">
-        {([true, false] as const).map((v) => (
-          <button
-            key={String(v)}
-            onClick={() => onChange(v)}
-            className={`flex-1 rounded px-2 py-1 text-[10px] font-medium transition-colors ${
-              value === v
-                ? "bg-amber-500 text-zinc-900"
-                : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            {v ? onLabel : offLabel}
-          </button>
-        ))}
-      </div>
-    </div>
+    <FieldRow label={label}>
+      <SegmentedControl
+        value={value ? "on" : "off"}
+        onChange={(v) => onChange(v === "on")}
+        options={[
+          { value: "on", label: onLabel },
+          { value: "off", label: offLabel },
+        ]}
+      />
+    </FieldRow>
   );
 }
 
@@ -645,8 +784,8 @@ function JakImgControls({
   onChange: (patch: Partial<JakImage>) => void;
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-md bg-zinc-800/60 p-2">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-400">
+    <div className="flex flex-col gap-2 rounded-md border border-zinc-800/70 bg-zinc-900/40 p-2.5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-300/90">
         {label}
       </p>
       <Slider label="Width" value={img.w} onChange={(v) => onChange({ w: v })} min={20} max={100} unit="%" />
@@ -654,19 +793,13 @@ function JakImgControls({
       <Slider label="Margin top" value={img.mt} onChange={(v) => onChange({ mt: v })} min={-120} max={80} />
       <Slider label="Z-index" value={img.z} onChange={(v) => onChange({ z: v })} min={0} max={10} unit="" />
       <AlignToggle label="Align" value={img.align} onChange={(v) => onChange({ align: v })} />
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-300">Circle</span>
-        <button
-          onClick={() => onChange({ round: !img.round })}
-          className={`rounded px-3 py-1 text-[10px] font-medium transition-colors ${
-            img.round
-              ? "bg-amber-500 text-zinc-900"
-              : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
-          }`}
-        >
-          {img.round ? "ON" : "OFF"}
-        </button>
-      </div>
+      <BoolToggle
+        label="Circle"
+        value={img.round}
+        onLabel="Yes"
+        offLabel="No"
+        onChange={(v) => onChange({ round: v })}
+      />
     </div>
   );
 }
@@ -732,6 +865,201 @@ function JakRowControls({
   );
 }
 
+function bindSlider<T extends object>(
+  current: T,
+  defaults: T,
+  setKey: <K extends keyof T>(key: K, v: T[K]) => void,
+) {
+  return function S<K extends keyof T & string>(
+    k: K,
+    label: string,
+    min: number,
+    max: number,
+    step: number = 1,
+    unit: string = "px",
+  ) {
+    return (
+      <Slider
+        key={k}
+        label={label}
+        value={current[k] as number}
+        defaultValue={defaults[k] as number}
+        onChange={(v) => setKey(k, v as T[K])}
+        min={min}
+        max={max}
+        step={step}
+        unit={unit}
+      />
+    );
+  };
+}
+
+function IconBtn({
+  onClick,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      className="flex size-6 items-center justify-center rounded text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+    >
+      {children}
+    </button>
+  );
+}
+
+function SubTabs<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { id: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-0.5">
+      {options.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          onClick={() => onChange(t.id)}
+          className={`rounded-md px-2 py-1 text-[10px] font-medium transition-colors ${
+            value === t.id
+              ? "bg-zinc-800 text-zinc-50"
+              : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
+          }`}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const SECTIONS: { id: Section; label: string }[] = [
+  { id: "hero", label: "Hero" },
+  { id: "heading", label: "Heading" },
+  { id: "steps", label: "Steps" },
+  { id: "jak", label: "Jak" },
+  { id: "timeline", label: "Timeline" },
+  { id: "prezent", label: "Prezent" },
+  { id: "taryfy", label: "Taryfy" },
+  { id: "dlaczego", label: "Dlaczego" },
+];
+
+const SECTION_LABEL: Record<Section, string> = {
+  hero: "Hero",
+  heading: "Heading",
+  steps: "Steps",
+  jak: "Jak to działa",
+  timeline: "Timeline",
+  prezent: "Prezent",
+  taryfy: "Taryfy",
+  dlaczego: "Dlaczego miód jest zdrowy",
+};
+
+function DlaczegoDrawingBlock({
+  label,
+  value,
+  defaults,
+  onChange,
+}: {
+  label: string;
+  value: DlaczegoDrawing;
+  defaults: DlaczegoDrawing;
+  onChange: (field: keyof DlaczegoDrawing, v: number) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-zinc-800/70 bg-zinc-900/40 p-2.5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-300/90">
+        {label}
+      </p>
+      <Slider
+        label="Offset (from side)"
+        value={value.offset}
+        defaultValue={defaults.offset}
+        onChange={(v) => onChange("offset", v)}
+        min={-30}
+        max={50}
+        unit="%"
+      />
+      <Slider
+        label="Top"
+        value={value.top}
+        defaultValue={defaults.top}
+        onChange={(v) => onChange("top", v)}
+        min={-10}
+        max={90}
+        unit="%"
+      />
+      <Slider
+        label="Width"
+        value={value.width}
+        defaultValue={defaults.width}
+        onChange={(v) => onChange("width", v)}
+        min={20}
+        max={300}
+      />
+    </div>
+  );
+}
+
+function DlaczegoCurveBlock({
+  label,
+  value,
+  defaults,
+  onChange,
+}: {
+  label: string;
+  value: DlaczegoCurve;
+  defaults: DlaczegoCurve;
+  onChange: (field: keyof DlaczegoCurve, v: number) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-zinc-800/70 bg-zinc-900/40 p-2.5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-300/90">
+        {label}
+      </p>
+      <Slider
+        label="Offset (from side)"
+        value={value.offset}
+        defaultValue={defaults.offset}
+        onChange={(v) => onChange("offset", v)}
+        min={-40}
+        max={40}
+        unit="%"
+      />
+      <Slider
+        label="Top (50 = center)"
+        value={value.top}
+        defaultValue={defaults.top}
+        onChange={(v) => onChange("top", v)}
+        min={0}
+        max={100}
+        unit="%"
+      />
+      <Slider
+        label="Width"
+        value={value.width}
+        defaultValue={defaults.width}
+        onChange={(v) => onChange("width", v)}
+        min={5}
+        max={100}
+        unit="%"
+      />
+    </div>
+  );
+}
+
 function SettingsPanel() {
   const [hero, setHero] = useHeroConfig();
   const [timeline, setTimeline] = useTimelineConfig();
@@ -740,6 +1068,7 @@ function SettingsPanel() {
   const [jak, setJak] = useJakConfig();
   const [prezent, setPrezent] = usePrezentConfig();
   const [taryfy, setTaryfy] = useTaryfyConfig();
+  const [dlaczego, setDlaczego] = useDlaczegoConfig();
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<Section>("hero");
   const [heroTab, setHeroTab] = useState<HeroTab>("heading");
@@ -749,6 +1078,7 @@ function SettingsPanel() {
   const [prezentTab, setPrezentTab] = useState<PrezentTab>("layout");
   const [jakTab, setJakTab] = useState<JakTab>("global");
   const [jakView, setJakView] = useState<"desktop" | "mobile">("desktop");
+  const [dlaczegoTab, setDlaczegoTab] = useState<DlaczegoTab>("desktop");
 
   const setH = <K extends keyof HeroConfig>(key: K, v: HeroConfig[K]) =>
     setHero((prev) => ({ ...prev, [key]: v }));
@@ -762,6 +1092,20 @@ function SettingsPanel() {
     setPrezent((prev) => ({ ...prev, [key]: v }));
   const setTr = <K extends keyof TaryfyConfig>(key: K, v: TaryfyConfig[K]) =>
     setTaryfy((prev) => ({ ...prev, [key]: v }));
+  const setDl = <K extends keyof DlaczegoConfig>(key: K, v: DlaczegoConfig[K]) =>
+    setDlaczego((prev) => ({ ...prev, [key]: v }));
+  const setDlPart = <
+    K extends keyof DlaczegoConfig,
+    P extends keyof DlaczegoConfig[K] & string,
+  >(
+    key: K,
+    field: P,
+    v: number,
+  ) =>
+    setDlaczego((prev) => ({
+      ...prev,
+      [key]: { ...(prev[key] as object), [field]: v },
+    }));
   const setJakRoot = <K extends keyof JakConfig>(key: K, v: JakConfig[K]) =>
     setJak((prev) => ({ ...prev, [key]: v }));
   const setJakRow = (
@@ -823,7 +1167,23 @@ function SettingsPanel() {
       };
     });
 
-  const configMap = { hero, heading, steps, jak, timeline, prezent, taryfy } as const;
+  const slH = bindSlider(hero, defaultHeroConfig, setH);
+  const slHd = bindSlider(heading, defaultHeadingConfig, setHd);
+  const slSt = bindSlider(steps, defaultStepsConfig, setSt);
+  const slT = bindSlider(timeline, defaultTimelineConfig, setT);
+  const slPr = bindSlider(prezent, defaultPrezentConfig, setPr);
+  const slTr = bindSlider(taryfy, defaultTaryfyConfig, setTr);
+  const slDl = bindSlider(dlaczego, defaultDlaczegoConfig, setDl);
+  const jakFlat = jak as unknown as Record<string, number>;
+  const jakDefaults = defaultJakConfig as unknown as Record<string, number>;
+  const slJ = bindSlider(jakFlat, jakDefaults, setJakRoot as unknown as <K extends string>(k: K, v: number) => void);
+  const slJM = bindSlider(
+    jak.mobile as unknown as Record<string, number>,
+    defaultJakConfig.mobile as unknown as Record<string, number>,
+    setJakMobileRoot as unknown as <K extends string>(k: K, v: number) => void,
+  );
+
+  const configMap = { hero, heading, steps, jak, timeline, prezent, taryfy, dlaczego } as const;
   const copyConfig = () => {
     navigator.clipboard.writeText(JSON.stringify(configMap[section], null, 2));
   };
@@ -835,426 +1195,433 @@ function SettingsPanel() {
     else if (section === "jak") setJak(defaultJakConfig);
     else if (section === "timeline") setTimeline(defaultTimelineConfig);
     else if (section === "prezent") setPrezent(defaultPrezentConfig);
-    else setTaryfy(defaultTaryfyConfig);
+    else if (section === "taryfy") setTaryfy(defaultTaryfyConfig);
+    else setDlaczego(defaultDlaczegoConfig);
   };
 
   const heroTabs: { id: HeroTab; label: string }[] = [
-    { id: "heading", label: "H1" },
-    { id: "buttons", label: "Btn" },
+    { id: "heading", label: "Heading" },
+    { id: "buttons", label: "Buttons" },
     { id: "bzz", label: "Bzz" },
-    { id: "section", label: "Sec" },
+    { id: "section", label: "Section" },
     { id: "wave", label: "Wave" },
-    { id: "mobile", label: "Mob" },
+    { id: "mobile", label: "Mobile" },
   ];
-
+  const headingTabs: { id: HeadingTab; label: string }[] = [
+    { id: "type", label: "Type" },
+    { id: "media", label: "Media" },
+    { id: "timing", label: "Timing" },
+    { id: "spring", label: "Spring" },
+    { id: "mobile", label: "Mobile" },
+  ];
+  const stepsTabs: { id: StepsTab; label: string }[] = [
+    { id: "layout", label: "Layout" },
+    { id: "type", label: "Typography" },
+  ];
   const timelineTabs: { id: TimelineTab; label: string }[] = [
     { id: "text", label: "Text" },
     { id: "cards", label: "Cards" },
-    { id: "type", label: "Type" },
+    { id: "type", label: "Typography" },
   ];
-
-  const tabBtnCls = (active: boolean) =>
-    `rounded px-2 py-1 text-[10px] font-medium transition-colors ${
-      active
-        ? "bg-amber-500 text-zinc-900"
-        : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
-    }`;
+  const prezentTabs: { id: PrezentTab; label: string }[] = [
+    { id: "layout", label: "Layout" },
+    { id: "type", label: "Typography" },
+  ];
+  const jakTabs: { id: JakTab; label: string }[] = [
+    { id: "global", label: "Global" },
+    { id: "r1", label: "Row 1" },
+    { id: "r2", label: "Row 2" },
+    { id: "r3", label: "Row 3" },
+    { id: "r4", label: "Row 4" },
+  ];
 
   return (
     <div className="fixed right-4 top-20 z-50">
-      <button
-        onClick={() => setOpen(!open)}
-        className="mb-1 ml-auto flex size-9 items-center justify-center rounded-lg bg-zinc-900 text-zinc-300 shadow-lg transition-colors hover:bg-zinc-800"
-        title={open ? "Close settings" : "Open settings"}
-      >
-        {open ? "\u2715" : "\u2699"}
-      </button>
-
-      {open && (
-        <div className="max-h-[calc(100vh-120px)] w-64 overflow-y-auto rounded-xl bg-zinc-900/95 p-3 shadow-2xl backdrop-blur-md">
-          {/* Section selector */}
-          <div className="mb-3 flex gap-1">
-            {(["hero", "heading", "steps", "jak", "timeline", "prezent", "taryfy"] as const).map((s) => (
-              <button
-                key={s}
-                onClick={() => setSection(s)}
-                className={`flex-1 rounded-md py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
-                  section === s
-                    ? "bg-amber-500 text-zinc-900"
-                    : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
-                }`}
-              >
-                {{ hero: "Hero", heading: "H2", steps: "Steps", jak: "Jak", timeline: "TL", prezent: "Gift", taryfy: "Price" }[s]}
-              </button>
-            ))}
-          </div>
-
-          {/* Header */}
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold capitalize text-white">
-              {section}
-            </h3>
-            <div className="flex gap-1.5">
-              <button
-                onClick={resetConfig}
-                className="rounded px-2 py-0.5 text-[10px] text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-              >
-                Reset
-              </button>
-              <button
-                onClick={copyConfig}
-                className="rounded bg-amber-500/20 px-2 py-0.5 text-[10px] text-amber-400 transition-colors hover:bg-amber-500/30"
-              >
-                Copy
-              </button>
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex size-9 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950/95 text-zinc-300 shadow-lg backdrop-blur-md transition-colors hover:bg-zinc-900 hover:text-zinc-100"
+          title="Open inspector"
+          aria-label="Open inspector"
+        >
+          <Settings className="size-4" />
+        </button>
+      ) : (
+        <div className="flex h-[calc(100vh-120px)] w-[420px] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/95 shadow-2xl backdrop-blur-md">
+          {/* Sidebar */}
+          <aside className="flex w-[110px] shrink-0 flex-col border-r border-zinc-800/80 bg-zinc-900/30">
+            <div className="flex h-9 items-center border-b border-zinc-800/80 px-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                Inspector
+              </p>
             </div>
-          </div>
+            <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-1.5">
+              {SECTIONS.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSection(s.id)}
+                  className={`flex items-center rounded-md px-2.5 py-1.5 text-left text-xs transition-colors ${
+                    section === s.id
+                      ? "bg-amber-500/10 text-amber-300"
+                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </nav>
+          </aside>
 
-          {/* ── Hero controls ── */}
-          {section === "hero" && (
-            <>
-              <div className="mb-3 flex flex-wrap gap-1">
-                {heroTabs.map((t) => (
-                  <button key={t.id} onClick={() => setHeroTab(t.id)} className={tabBtnCls(heroTab === t.id)}>
-                    {t.label}
-                  </button>
-                ))}
+          {/* Content pane */}
+          <section className="flex flex-1 flex-col overflow-hidden">
+            {/* Header */}
+            <header className="flex h-9 items-center justify-between border-b border-zinc-800/80 px-2.5">
+              <h3 className="truncate text-xs font-semibold text-zinc-100">
+                {SECTION_LABEL[section]}
+              </h3>
+              <div className="flex items-center gap-0.5">
+                <IconBtn onClick={resetConfig} title="Reset section to defaults">
+                  <RotateCcw className="size-3.5" />
+                </IconBtn>
+                <IconBtn onClick={copyConfig} title="Copy section JSON">
+                  <Copy className="size-3.5" />
+                </IconBtn>
+                <IconBtn onClick={() => setOpen(false)} title="Close inspector">
+                  <X className="size-3.5" />
+                </IconBtn>
               </div>
-              <div className="flex flex-col gap-3">
-                {heroTab === "heading" && (
-                  <>
-                    <Slider label="Font size" value={hero.headingSize} onChange={(v) => setH("headingSize", v)} min={36} max={200} />
-                    <Slider label="Width" value={hero.headingWidth} onChange={(v) => setH("headingWidth", v)} min={20} max={100} unit="%" />
-                    <Slider label="Y from ground" value={hero.headingOffsetY} onChange={(v) => setH("headingOffsetY", v)} min={-60} max={60} unit="%" />
-                    <Slider label="Subheading size" value={hero.subheadingSize} onChange={(v) => setH("subheadingSize", v)} min={8} max={36} />
-                    <Slider label="Line height" value={hero.headingLineHeight} onChange={(v) => setH("headingLineHeight", v)} min={0.5} max={2} step={0.05} unit="" />
-                  </>
-                )}
-                {heroTab === "buttons" && (
-                  <>
-                    <Slider label="X (stage)" value={hero.buttonX} onChange={(v) => setH("buttonX", v)} min={0} max={100} unit="%" />
-                    <Slider label="Y from ground" value={hero.buttonOffsetY} onChange={(v) => setH("buttonOffsetY", v)} min={-60} max={60} unit="%" />
-                    <Slider label="Gap" value={hero.buttonGap} onChange={(v) => setH("buttonGap", v)} min={0} max={80} />
-                    <Slider label="Font size" value={hero.buttonFontSize} onChange={(v) => setH("buttonFontSize", v)} min={8} max={48} />
-                    <Slider label="Padding X" value={hero.buttonPaddingX} onChange={(v) => setH("buttonPaddingX", v)} min={0} max={80} />
-                    <Slider label="Padding Y" value={hero.buttonPaddingY} onChange={(v) => setH("buttonPaddingY", v)} min={0} max={48} />
-                    <Slider label="Border radius" value={hero.buttonRadius} onChange={(v) => setH("buttonRadius", v)} min={0} max={60} />
-                    <Slider label="Drip bleed" value={hero.dripOffset} onChange={(v) => setH("dripOffset", v)} min={-4} max={20} />
-                    <Slider label="Drip inset" value={hero.dripInset} onChange={(v) => setH("dripInset", v)} min={0} max={30} />
-                  </>
-                )}
-                {heroTab === "bzz" && (
-                  <>
-                    <Slider label="From right (stage)" value={hero.bzzRight} onChange={(v) => setH("bzzRight", v)} min={-20} max={50} unit="%" />
-                    <Slider label="Y from ground" value={hero.bzzOffsetY} onChange={(v) => setH("bzzOffsetY", v)} min={-60} max={60} unit="%" />
-                    <Slider label="Font size" value={hero.bzzSize} onChange={(v) => setH("bzzSize", v)} min={10} max={36} />
-                  </>
-                )}
-                {heroTab === "section" && (
-                  <>
-                    <Slider label="Ground Y (opaque top)" value={hero.groundY} onChange={(v) => setH("groundY", v)} min={0} max={100} unit="%" />
-                    <Slider label="Min height (desktop)" value={hero.sectionMinHeight} onChange={(v) => setH("sectionMinHeight", v)} min={0} max={200} unit="vh" />
-                  </>
-                )}
-                {heroTab === "wave" && (
-                  <>
-                    <Slider label="Amplitude (height)" value={hero.waveHeight} onChange={(v) => setH("waveHeight", v)} min={0} max={400} />
-                    <Slider label="Centerline Y offset" value={hero.waveCenterOffsetY} onChange={(v) => setH("waveCenterOffsetY", v)} min={-200} max={200} />
-                    <Slider label="Overflow below section" value={hero.waveOverflowY} onChange={(v) => setH("waveOverflowY", v)} min={0} max={300} />
-                    <Slider label="Speed" value={hero.waveSpeed} onChange={(v) => setH("waveSpeed", v)} min={0} max={4} step={0.05} unit="" />
-                  </>
-                )}
-                {heroTab === "mobile" && (
-                  <>
-                    <Slider label="Min height" value={hero.mobileMinHeight} onChange={(v) => setH("mobileMinHeight", v)} min={60} max={200} unit="dvh" />
-                    <Slider label="Logo height" value={hero.mobileLogoHeight} onChange={(v) => setH("mobileLogoHeight", v)} min={40} max={140} />
-                    <Slider label="Heading size" value={hero.mobileHeadingSize} onChange={(v) => setH("mobileHeadingSize", v)} min={20} max={72} />
-                    <Slider label="Heading line height" value={hero.mobileHeadingLineHeight} onChange={(v) => setH("mobileHeadingLineHeight", v)} min={0.7} max={1.5} step={0.05} unit="" />
-                    <Slider label="Subheading size" value={hero.mobileSubheadingSize} onChange={(v) => setH("mobileSubheadingSize", v)} min={8} max={20} />
-                    <Slider label="Padding top" value={hero.mobilePaddingTop} onChange={(v) => setH("mobilePaddingTop", v)} min={40} max={200} />
-                    <Slider label="Padding bottom" value={hero.mobilePaddingBottom} onChange={(v) => setH("mobilePaddingBottom", v)} min={16} max={120} />
-                    <Slider label="Padding X" value={hero.mobilePaddingX} onChange={(v) => setH("mobilePaddingX", v)} min={0} max={40} />
-                    <Slider label="Btn font" value={hero.mobileButtonFontSize} onChange={(v) => setH("mobileButtonFontSize", v)} min={10} max={24} />
-                    <Slider label="Btn padding X" value={hero.mobileButtonPaddingX} onChange={(v) => setH("mobileButtonPaddingX", v)} min={8} max={40} />
-                    <Slider label="Btn padding Y" value={hero.mobileButtonPaddingY} onChange={(v) => setH("mobileButtonPaddingY", v)} min={4} max={24} />
-                    <Slider label="Btn radius" value={hero.mobileButtonRadius} onChange={(v) => setH("mobileButtonRadius", v)} min={0} max={30} />
-                    <Slider label="Btn gap" value={hero.mobileButtonGap} onChange={(v) => setH("mobileButtonGap", v)} min={0} max={32} />
-                    <Slider label="Bzz size" value={hero.mobileBzzSize} onChange={(v) => setH("mobileBzzSize", v)} min={8} max={28} />
-                  </>
-                )}
-              </div>
-            </>
-          )}
+            </header>
 
-          {/* ── Heading controls ── */}
-          {section === "heading" && (
-            <>
-              <div className="mb-3 flex flex-wrap gap-1">
-                {([
-                  { id: "type" as const, label: "Type" },
-                  { id: "media" as const, label: "Media" },
-                  { id: "timing" as const, label: "Time" },
-                  { id: "spring" as const, label: "Spring" },
-                  { id: "mobile" as const, label: "Mob" },
-                ]).map((t) => (
-                  <button key={t.id} onClick={() => setHeadingTab(t.id)} className={tabBtnCls(headingTab === t.id)}>
-                    {t.label}
-                  </button>
-                ))}
+            {/* Sub-navigation */}
+            {section === "dlaczego" && (
+              <div className="flex flex-col gap-1.5 border-b border-zinc-800/80 px-2.5 py-2">
+                <SegmentedControl
+                  value={dlaczegoTab}
+                  onChange={setDlaczegoTab}
+                  options={[
+                    { value: "desktop", label: "Desktop" },
+                    { value: "mobile", label: "Mobile" },
+                  ]}
+                  className="self-start"
+                />
               </div>
-              <div className="flex flex-col gap-3">
-                {headingTab === "type" && (
-                  <>
-                    <Slider label="Scale" value={heading.scale} onChange={(v) => setHd("scale", v)} min={1} max={10} step={0.25} unit="rem" />
-                    <Slider label="Line height" value={heading.lineHeight} onChange={(v) => setHd("lineHeight", v)} min={0.7} max={2} step={0.05} unit="" />
-                    <Slider label="Margin bottom" value={heading.marginBottom} onChange={(v) => setHd("marginBottom", v)} min={0} max={5} step={0.25} unit="rem" />
-                  </>
-                )}
-                {headingTab === "media" && (
-                  <>
-                    <Slider label="Width" value={heading.mediaW} onChange={(v) => setHd("mediaW", v)} min={0.5} max={4} step={0.1} unit="em" />
-                    <Slider label="Height" value={heading.mediaH} onChange={(v) => setHd("mediaH", v)} min={0.3} max={2} step={0.05} unit="em" />
-                    <Slider label="Gap" value={heading.mediaGap} onChange={(v) => setHd("mediaGap", v)} min={0} max={0.5} step={0.01} unit="em" />
-                    <Slider label="Radius" value={heading.mediaRadius} onChange={(v) => setHd("mediaRadius", v)} min={0} max={1.5} step={0.05} unit="rem" />
-                    <Slider label="Word gap" value={heading.wordGap} onChange={(v) => setHd("wordGap", v)} min={0} max={0.5} step={0.01} unit="em" />
-                  </>
-                )}
-                {headingTab === "timing" && (
-                  <>
-                    <Slider label="Duration" value={heading.duration} onChange={(v) => setHd("duration", v)} min={0.1} max={2} step={0.05} unit="s" />
-                    <Slider label="Stagger" value={heading.stagger} onChange={(v) => setHd("stagger", v)} min={0} max={0.5} step={0.01} unit="s" />
-                    <Slider label="Media delay" value={heading.mediaDelay} onChange={(v) => setHd("mediaDelay", v)} min={0} max={2} step={0.05} unit="s" />
-                    <Slider label="Media dur" value={heading.mediaDuration} onChange={(v) => setHd("mediaDuration", v)} min={0.1} max={2} step={0.05} unit="s" />
-                  </>
-                )}
-                {headingTab === "spring" && (
-                  <>
-                    <Slider label="Stiffness" value={heading.stiffness} onChange={(v) => setHd("stiffness", v)} min={20} max={400} step={5} unit="" />
-                    <Slider label="Damping" value={heading.damping} onChange={(v) => setHd("damping", v)} min={5} max={60} step={1} unit="" />
-                    <Slider label="Mass" value={heading.mass} onChange={(v) => setHd("mass", v)} min={0.1} max={5} step={0.1} unit="" />
-                  </>
-                )}
-                {headingTab === "mobile" && (
-                  <>
-                    <Slider label="Scale" value={heading.mobileScale} onChange={(v) => setHd("mobileScale", v)} min={1} max={8} step={0.25} unit="rem" />
-                    <Slider label="Line height" value={heading.mobileLineHeight} onChange={(v) => setHd("mobileLineHeight", v)} min={0.7} max={2} step={0.05} unit="" />
-                    <Slider label="Margin bottom" value={heading.mobileMarginBottom} onChange={(v) => setHd("mobileMarginBottom", v)} min={0} max={5} step={0.25} unit="rem" />
-                    <Slider label="Word gap" value={heading.mobileWordGap} onChange={(v) => setHd("mobileWordGap", v)} min={0} max={0.5} step={0.01} unit="em" />
-                    <Slider label="Media W" value={heading.mobileMediaW} onChange={(v) => setHd("mobileMediaW", v)} min={0.5} max={4} step={0.1} unit="em" />
-                    <Slider label="Media H" value={heading.mobileMediaH} onChange={(v) => setHd("mobileMediaH", v)} min={0.3} max={2} step={0.05} unit="em" />
-                    <Slider label="Media gap" value={heading.mobileMediaGap} onChange={(v) => setHd("mobileMediaGap", v)} min={0} max={0.5} step={0.01} unit="em" />
-                    <Slider label="Media radius" value={heading.mobileMediaRadius} onChange={(v) => setHd("mobileMediaRadius", v)} min={0} max={1.5} step={0.05} unit="rem" />
-                  </>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* ── Steps controls ── */}
-          {section === "steps" && (
-            <>
-              <div className="mb-3 flex flex-wrap gap-1">
-                {([
-                  { id: "layout" as const, label: "Layout" },
-                  { id: "type" as const, label: "Type" },
-                ]).map((t) => (
-                  <button key={t.id} onClick={() => setStepsTab(t.id)} className={tabBtnCls(stepsTab === t.id)}>
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex flex-col gap-3">
-                {stepsTab === "layout" && (
-                  <>
-                    <Slider label="Row gap" value={steps.rowGap} onChange={(v) => setSt("rowGap", v)} min={0} max={120} />
-                    <Slider label="Image width" value={steps.imageWidth} onChange={(v) => setSt("imageWidth", v)} min={30} max={70} unit="%" />
-                    <Slider label="Inner gap" value={steps.innerGap} onChange={(v) => setSt("innerGap", v)} min={0} max={80} />
-                    <Slider label="Image radius" value={steps.imageRadius} onChange={(v) => setSt("imageRadius", v)} min={0} max={40} />
-                    <Slider label="Image ratio" value={steps.imageRatio} onChange={(v) => setSt("imageRatio", v)} min={0.5} max={2} step={0.01} unit="" />
-                  </>
-                )}
-                {stepsTab === "type" && (
-                  <>
-                    <Slider label="Title size" value={steps.titleSize} onChange={(v) => setSt("titleSize", v)} min={14} max={32} />
-                    <Slider label="Body size" value={steps.bodySize} onChange={(v) => setSt("bodySize", v)} min={12} max={24} />
-                    <Slider label="Number size" value={steps.numberSize} onChange={(v) => setSt("numberSize", v)} min={20} max={56} />
-                  </>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* ── Jak to działa (image placement) controls ── */}
-          {section === "jak" && (
-            <>
-              {/* Viewport toggle */}
-              <div className="mb-2 flex gap-1">
-                {(["desktop", "mobile"] as const).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setJakView(v)}
-                    className={`flex-1 rounded-md py-1 text-[10px] font-semibold uppercase tracking-wider transition-colors ${
-                      jakView === v
-                        ? "bg-amber-500 text-zinc-900"
-                        : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
-                    }`}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
-              <div className="mb-3 flex flex-wrap gap-1">
-                {([
-                  { id: "global" as const, label: "All" },
-                  { id: "r1" as const, label: "R1" },
-                  { id: "r2" as const, label: "R2" },
-                  { id: "r3" as const, label: "R3" },
-                  { id: "r4" as const, label: "R4" },
-                ]).map((t) => (
-                  <button key={t.id} onClick={() => setJakTab(t.id)} className={tabBtnCls(jakTab === t.id)}>
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex flex-col gap-3">
-                {jakTab === "global" && jakView === "desktop" && (
-                  <>
-                    <Slider label="Row gap" value={jak.rowGap} onChange={(v) => setJakRoot("rowGap", v)} min={0} max={200} />
-                    <Slider label="Col gap" value={jak.colGap} onChange={(v) => setJakRoot("colGap", v)} min={0} max={160} />
-                    <Slider label="Text col %" value={jak.textColPct} onChange={(v) => setJakRoot("textColPct", v)} min={30} max={70} unit="%" />
-                    <Slider label="Image radius" value={jak.radius} onChange={(v) => setJakRoot("radius", v)} min={0} max={40} />
-                    <Slider label="Title size" value={jak.titleSize} onChange={(v) => setJakRoot("titleSize", v)} min={14} max={48} />
-                    <Slider label="Body size" value={jak.bodySize} onChange={(v) => setJakRoot("bodySize", v)} min={10} max={24} />
-                    <Slider label="Text max-width" value={jak.textMaxW} onChange={(v) => setJakRoot("textMaxW", v)} min={200} max={700} />
-                  </>
-                )}
-                {jakTab === "global" && jakView === "mobile" && (
-                  <>
-                    <Slider label="Row gap" value={jak.mobile.rowGap} onChange={(v) => setJakMobileRoot("rowGap", v)} min={0} max={120} />
-                    <Slider label="Padding X" value={jak.mobile.paddingX} onChange={(v) => setJakMobileRoot("paddingX", v)} min={0} max={48} />
-                    <Slider label="Title size" value={jak.mobile.titleSize} onChange={(v) => setJakMobileRoot("titleSize", v)} min={14} max={36} />
-                    <Slider label="Body size" value={jak.mobile.bodySize} onChange={(v) => setJakMobileRoot("bodySize", v)} min={10} max={20} />
-                    <Slider label="Text max-width" value={jak.mobile.textMaxW} onChange={(v) => setJakMobileRoot("textMaxW", v)} min={200} max={600} />
-                  </>
-                )}
-                {(["r1", "r2", "r3", "r4"] as const).includes(jakTab as "r1") && jakView === "desktop" && (
-                  <JakRowControls
-                    rowKey={jakTab as "r1" | "r2" | "r3" | "r4"}
-                    row={jak[jakTab as "r1" | "r2" | "r3" | "r4"]}
-                    setRow={setJakRow}
-                    setImg={setJakImg}
+            )}
+            {section !== "taryfy" && section !== "dlaczego" && (
+              <div className="flex flex-col gap-1.5 border-b border-zinc-800/80 px-2.5 py-2">
+                {section === "jak" && (
+                  <SegmentedControl
+                    value={jakView}
+                    onChange={setJakView}
+                    options={[
+                      { value: "desktop", label: "Desktop" },
+                      { value: "mobile", label: "Mobile" },
+                    ]}
+                    className="self-start"
                   />
                 )}
-                {(["r1", "r2", "r3", "r4"] as const).includes(jakTab as "r1") && jakView === "mobile" && (
-                  <>
-                    <OrderToggle
-                      label="Image order"
-                      value={jak.mobile[jakTab as "r1" | "r2" | "r3" | "r4"].imageOrder}
-                      onChange={(v) =>
-                        setJakMobileRow(jakTab as "r1" | "r2" | "r3" | "r4", { imageOrder: v })
-                      }
-                    />
-                    <JakRowControls
-                      rowKey={jakTab as "r1" | "r2" | "r3" | "r4"}
-                      row={jak.mobile[jakTab as "r1" | "r2" | "r3" | "r4"]}
-                      setRow={setJakMobileRow}
-                      setImg={setJakMobileImg}
-                    />
-                  </>
-                )}
+                {section === "hero" && <SubTabs value={heroTab} options={heroTabs} onChange={setHeroTab} />}
+                {section === "heading" && <SubTabs value={headingTab} options={headingTabs} onChange={setHeadingTab} />}
+                {section === "steps" && <SubTabs value={stepsTab} options={stepsTabs} onChange={setStepsTab} />}
+                {section === "timeline" && <SubTabs value={timelineTab} options={timelineTabs} onChange={setTimelineTab} />}
+                {section === "prezent" && <SubTabs value={prezentTab} options={prezentTabs} onChange={setPrezentTab} />}
+                {section === "jak" && <SubTabs value={jakTab} options={jakTabs} onChange={setJakTab} />}
               </div>
-            </>
-          )}
+            )}
 
-          {/* ── Timeline controls ── */}
-          {section === "timeline" && (
-            <>
-              <div className="mb-3 flex flex-wrap gap-1">
-                {timelineTabs.map((t) => (
-                  <button key={t.id} onClick={() => setTimelineTab(t.id)} className={tabBtnCls(timelineTab === t.id)}>
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex flex-col gap-3">
-                {timelineTab === "text" && (
-                  <>
-                    <Slider label="Font size" value={timeline.textSize} onChange={(v) => setT("textSize", v)} min={6} max={28} unit="vw" />
-                    <Slider label="Line height" value={timeline.textLeading} onChange={(v) => setT("textLeading", v)} min={0.5} max={1.5} step={0.05} unit="" />
-                    <Slider label="Label size" value={timeline.labelSize} onChange={(v) => setT("labelSize", v)} min={8} max={24} />
-                  </>
-                )}
-                {timelineTab === "cards" && (
-                  <>
-                    <Slider label="Card width" value={timeline.cardWidth} onChange={(v) => setT("cardWidth", v)} min={240} max={560} />
-                    <Slider label="Card gap" value={timeline.cardGap} onChange={(v) => setT("cardGap", v)} min={8} max={80} />
-                    <Slider label="Card padding" value={timeline.cardPadding} onChange={(v) => setT("cardPadding", v)} min={8} max={48} />
-                    <Slider label="Max rotation" value={timeline.rotationMax} onChange={(v) => setT("rotationMax", v)} min={0} max={10} step={0.5} unit="°" />
-                  </>
-                )}
-                {timelineTab === "type" && (
-                  <>
-                    <Slider label="Title size" value={timeline.cardTitleSize} onChange={(v) => setT("cardTitleSize", v)} min={10} max={28} />
-                    <Slider label="Title weight" value={timeline.cardTitleWeight} onChange={(v) => setT("cardTitleWeight", v)} min={400} max={900} step={100} unit="" />
-                    <Slider label="Body size" value={timeline.cardBodySize} onChange={(v) => setT("cardBodySize", v)} min={10} max={22} />
-                  </>
-                )}
-              </div>
-            </>
-          )}
+            {/* Controls */}
+            <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-3 py-3">
+              {section === "hero" && heroTab === "heading" && (
+                <>
+                  {slH("headingSize", "Font size", 36, 200)}
+                  {slH("headingWidth", "Width", 20, 100, 1, "%")}
+                  {slH("headingOffsetY", "Y from ground", -60, 60, 1, "%")}
+                  {slH("subheadingSize", "Subheading size", 8, 36)}
+                  {slH("headingLineHeight", "Line height", 0.5, 2, 0.05, "")}
+                </>
+              )}
+              {section === "hero" && heroTab === "buttons" && (
+                <>
+                  {slH("buttonX", "X (stage)", 0, 100, 1, "%")}
+                  {slH("buttonOffsetY", "Y from ground", -60, 60, 1, "%")}
+                  {slH("buttonGap", "Gap", 0, 80)}
+                  {slH("buttonFontSize", "Font size", 8, 48)}
+                  {slH("buttonPaddingX", "Padding X", 0, 80)}
+                  {slH("buttonPaddingY", "Padding Y", 0, 48)}
+                  {slH("buttonRadius", "Border radius", 0, 60)}
+                  {slH("dripOffset", "Drip bleed", -4, 20)}
+                  {slH("dripInset", "Drip inset", 0, 30)}
+                </>
+              )}
+              {section === "hero" && heroTab === "bzz" && (
+                <>
+                  {slH("bzzRight", "From right (stage)", -20, 50, 1, "%")}
+                  {slH("bzzOffsetY", "Y from ground", -60, 60, 1, "%")}
+                  {slH("bzzSize", "Font size", 10, 36)}
+                </>
+              )}
+              {section === "hero" && heroTab === "section" && (
+                <>
+                  {slH("groundY", "Ground Y (opaque top)", 0, 100, 1, "%")}
+                  {slH("sectionMinHeight", "Min height (desktop)", 0, 200, 1, "vh")}
+                </>
+              )}
+              {section === "hero" && heroTab === "wave" && (
+                <>
+                  {slH("waveHeight", "Amplitude (height)", 0, 400)}
+                  {slH("waveCenterOffsetY", "Centerline Y offset", -200, 200)}
+                  {slH("waveOverflowY", "Overflow below section", 0, 300)}
+                  {slH("waveSpeed", "Speed", 0, 4, 0.05, "")}
+                </>
+              )}
+              {section === "hero" && heroTab === "mobile" && (
+                <>
+                  {slH("mobileMinHeight", "Min height", 60, 200, 1, "dvh")}
+                  {slH("mobileLogoHeight", "Logo height", 40, 140)}
+                  {slH("mobileHeadingSize", "Heading size", 20, 72)}
+                  {slH("mobileHeadingLineHeight", "Heading line height", 0.7, 1.5, 0.05, "")}
+                  {slH("mobileSubheadingSize", "Subheading size", 8, 20)}
+                  {slH("mobilePaddingTop", "Padding top", 40, 200)}
+                  {slH("mobilePaddingBottom", "Padding bottom", 16, 120)}
+                  {slH("mobilePaddingX", "Padding X", 0, 40)}
+                  {slH("mobileButtonFontSize", "Button font", 10, 24)}
+                  {slH("mobileButtonPaddingX", "Button padding X", 8, 40)}
+                  {slH("mobileButtonPaddingY", "Button padding Y", 4, 24)}
+                  {slH("mobileButtonRadius", "Button radius", 0, 30)}
+                  {slH("mobileButtonGap", "Button gap", 0, 32)}
+                  {slH("mobileBzzSize", "Bzz size", 8, 28)}
+                </>
+              )}
 
-          {/* ── Prezent controls ── */}
-          {section === "prezent" && (
-            <>
-              <div className="mb-3 flex flex-wrap gap-1">
-                {([
-                  { id: "layout" as const, label: "Layout" },
-                  { id: "type" as const, label: "Type" },
-                ]).map((t) => (
-                  <button key={t.id} onClick={() => setPrezentTab(t.id)} className={tabBtnCls(prezentTab === t.id)}>
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex flex-col gap-3">
-                {prezentTab === "layout" && (
-                  <>
-                    <Slider label="Rotation" value={prezent.rotation} onChange={(v) => setPr("rotation", v)} min={0} max={15} step={0.5} unit="°" />
-                    <Slider label="Overlap" value={prezent.overlap} onChange={(v) => setPr("overlap", v)} min={0} max={160} />
-                    <Slider label="Vertical offset" value={prezent.verticalOffset} onChange={(v) => setPr("verticalOffset", v)} min={0} max={80} />
-                    <Slider label="Horizontal offset" value={prezent.horizontalOffset} onChange={(v) => setPr("horizontalOffset", v)} min={-120} max={120} />
-                    <Slider label="Side width" value={prezent.sideWidth} onChange={(v) => setPr("sideWidth", v)} min={200} max={640} />
-                    <Slider label="Center width" value={prezent.centerWidth} onChange={(v) => setPr("centerWidth", v)} min={240} max={700} />
-                  </>
-                )}
-                {prezentTab === "type" && (
-                  <>
-                    <Slider label="Card padding" value={prezent.cardPadding} onChange={(v) => setPr("cardPadding", v)} min={8} max={48} />
-                    <Slider label="Card radius" value={prezent.cardRadius} onChange={(v) => setPr("cardRadius", v)} min={0} max={32} />
-                    <Slider label="Title size" value={prezent.titleSize} onChange={(v) => setPr("titleSize", v)} min={12} max={28} />
-                    <Slider label="Body size" value={prezent.bodySize} onChange={(v) => setPr("bodySize", v)} min={10} max={22} />
-                    <Slider label="Image width (0=auto)" value={prezent.imageWidth} onChange={(v) => setPr("imageWidth", v)} min={0} max={500} />
-                    <Slider label="Image height (0=auto)" value={prezent.imageHeight} onChange={(v) => setPr("imageHeight", v)} min={0} max={500} />
-                  </>
-                )}
-              </div>
-            </>
-          )}
+              {section === "heading" && headingTab === "type" && (
+                <>
+                  {slHd("scale", "Scale", 1, 10, 0.25, "rem")}
+                  {slHd("lineHeight", "Line height", 0.7, 2, 0.05, "")}
+                  {slHd("marginBottom", "Margin bottom", 0, 5, 0.25, "rem")}
+                </>
+              )}
+              {section === "heading" && headingTab === "media" && (
+                <>
+                  {slHd("mediaW", "Width", 0.5, 4, 0.1, "em")}
+                  {slHd("mediaH", "Height", 0.3, 2, 0.05, "em")}
+                  {slHd("mediaGap", "Gap", 0, 0.5, 0.01, "em")}
+                  {slHd("mediaRadius", "Radius", 0, 1.5, 0.05, "rem")}
+                  {slHd("wordGap", "Word gap", 0, 0.5, 0.01, "em")}
+                </>
+              )}
+              {section === "heading" && headingTab === "timing" && (
+                <>
+                  {slHd("duration", "Duration", 0.1, 2, 0.05, "s")}
+                  {slHd("stagger", "Stagger", 0, 0.5, 0.01, "s")}
+                  {slHd("mediaDelay", "Media delay", 0, 2, 0.05, "s")}
+                  {slHd("mediaDuration", "Media duration", 0.1, 2, 0.05, "s")}
+                </>
+              )}
+              {section === "heading" && headingTab === "spring" && (
+                <>
+                  {slHd("stiffness", "Stiffness", 20, 400, 5, "")}
+                  {slHd("damping", "Damping", 5, 60, 1, "")}
+                  {slHd("mass", "Mass", 0.1, 5, 0.1, "")}
+                </>
+              )}
+              {section === "heading" && headingTab === "mobile" && (
+                <>
+                  {slHd("mobileScale", "Scale", 1, 8, 0.25, "rem")}
+                  {slHd("mobileLineHeight", "Line height", 0.7, 2, 0.05, "")}
+                  {slHd("mobileMarginBottom", "Margin bottom", 0, 5, 0.25, "rem")}
+                  {slHd("mobileWordGap", "Word gap", 0, 0.5, 0.01, "em")}
+                  {slHd("mobileMediaW", "Media width", 0.5, 4, 0.1, "em")}
+                  {slHd("mobileMediaH", "Media height", 0.3, 2, 0.05, "em")}
+                  {slHd("mobileMediaGap", "Media gap", 0, 0.5, 0.01, "em")}
+                  {slHd("mobileMediaRadius", "Media radius", 0, 1.5, 0.05, "rem")}
+                </>
+              )}
 
-          {/* ── Taryfy controls ── */}
-          {section === "taryfy" && (
-            <div className="flex flex-col gap-3">
-              <Slider label="Card radius" value={taryfy.cardRadius} onChange={(v) => setTr("cardRadius", v)} min={0} max={60} />
-              <Slider label="Pad X" value={taryfy.cardPaddingX} onChange={(v) => setTr("cardPaddingX", v)} min={8} max={60} />
-              <Slider label="Pad top" value={taryfy.cardPaddingTop} onChange={(v) => setTr("cardPaddingTop", v)} min={8} max={80} />
-              <Slider label="Pad bottom" value={taryfy.cardPaddingBottom} onChange={(v) => setTr("cardPaddingBottom", v)} min={8} max={80} />
-              <Slider label="Drip height" value={taryfy.dripHeight} onChange={(v) => setTr("dripHeight", v)} min={10} max={140} />
-              <Slider label="Title size" value={taryfy.titleSize} onChange={(v) => setTr("titleSize", v)} min={20} max={72} />
-              <Slider label="Price size" value={taryfy.priceSize} onChange={(v) => setTr("priceSize", v)} min={20} max={72} />
-              <Slider label="Body size" value={taryfy.bodySize} onChange={(v) => setTr("bodySize", v)} min={10} max={20} />
-              <Slider label="Feature gap" value={taryfy.featureGap} onChange={(v) => setTr("featureGap", v)} min={4} max={32} />
+              {section === "steps" && stepsTab === "layout" && (
+                <>
+                  {slSt("rowGap", "Row gap", 0, 120)}
+                  {slSt("imageWidth", "Image width", 30, 70, 1, "%")}
+                  {slSt("innerGap", "Inner gap", 0, 80)}
+                  {slSt("imageRadius", "Image radius", 0, 40)}
+                  {slSt("imageRatio", "Image ratio", 0.5, 2, 0.01, "")}
+                </>
+              )}
+              {section === "steps" && stepsTab === "type" && (
+                <>
+                  {slSt("titleSize", "Title size", 14, 32)}
+                  {slSt("bodySize", "Body size", 12, 24)}
+                  {slSt("numberSize", "Number size", 20, 56)}
+                </>
+              )}
+
+              {section === "jak" && jakTab === "global" && jakView === "desktop" && (
+                <>
+                  {slJ("rowGap", "Row gap", 0, 200)}
+                  {slJ("colGap", "Column gap", 0, 160)}
+                  {slJ("textColPct", "Text column", 30, 70, 1, "%")}
+                  {slJ("radius", "Image radius", 0, 40)}
+                  {slJ("titleSize", "Title size", 14, 48)}
+                  {slJ("bodySize", "Body size", 10, 24)}
+                  {slJ("textMaxW", "Text max-width", 200, 700)}
+                </>
+              )}
+              {section === "jak" && jakTab === "global" && jakView === "mobile" && (
+                <>
+                  {slJM("rowGap", "Row gap", 0, 120)}
+                  {slJM("paddingX", "Padding X", 0, 48)}
+                  {slJM("titleSize", "Title size", 14, 36)}
+                  {slJM("bodySize", "Body size", 10, 20)}
+                  {slJM("textMaxW", "Text max-width", 200, 600)}
+                </>
+              )}
+              {section === "jak" && (["r1", "r2", "r3", "r4"] as const).includes(jakTab as "r1") && jakView === "desktop" && (
+                <JakRowControls
+                  rowKey={jakTab as "r1" | "r2" | "r3" | "r4"}
+                  row={jak[jakTab as "r1" | "r2" | "r3" | "r4"]}
+                  setRow={setJakRow}
+                  setImg={setJakImg}
+                />
+              )}
+              {section === "jak" && (["r1", "r2", "r3", "r4"] as const).includes(jakTab as "r1") && jakView === "mobile" && (
+                <>
+                  <OrderToggle
+                    label="Image order"
+                    value={jak.mobile[jakTab as "r1" | "r2" | "r3" | "r4"].imageOrder}
+                    onChange={(v) =>
+                      setJakMobileRow(jakTab as "r1" | "r2" | "r3" | "r4", { imageOrder: v })
+                    }
+                  />
+                  <JakRowControls
+                    rowKey={jakTab as "r1" | "r2" | "r3" | "r4"}
+                    row={jak.mobile[jakTab as "r1" | "r2" | "r3" | "r4"]}
+                    setRow={setJakMobileRow}
+                    setImg={setJakMobileImg}
+                  />
+                </>
+              )}
+
+              {section === "timeline" && timelineTab === "text" && (
+                <>
+                  {slT("textSize", "Font size", 6, 28, 1, "vw")}
+                  {slT("textLeading", "Line height", 0.5, 1.5, 0.05, "")}
+                  {slT("labelSize", "Label size", 8, 24)}
+                </>
+              )}
+              {section === "timeline" && timelineTab === "cards" && (
+                <>
+                  {slT("cardWidth", "Card width", 240, 560)}
+                  {slT("cardGap", "Card gap", 8, 80)}
+                  {slT("cardPadding", "Card padding", 8, 48)}
+                  {slT("rotationMax", "Max rotation", 0, 10, 0.5, "°")}
+                </>
+              )}
+              {section === "timeline" && timelineTab === "type" && (
+                <>
+                  {slT("cardTitleSize", "Title size", 10, 28)}
+                  {slT("cardTitleWeight", "Title weight", 400, 900, 100, "")}
+                  {slT("cardBodySize", "Body size", 10, 22)}
+                </>
+              )}
+
+              {section === "prezent" && prezentTab === "layout" && (
+                <>
+                  {slPr("rotation", "Rotation", 0, 15, 0.5, "°")}
+                  {slPr("overlap", "Overlap", 0, 160)}
+                  {slPr("verticalOffset", "Vertical offset", 0, 80)}
+                  {slPr("horizontalOffset", "Horizontal offset", -120, 120)}
+                  {slPr("sideWidth", "Side width", 200, 640)}
+                  {slPr("centerWidth", "Center width", 240, 700)}
+                </>
+              )}
+              {section === "prezent" && prezentTab === "type" && (
+                <>
+                  {slPr("cardPadding", "Card padding", 8, 48)}
+                  {slPr("cardRadius", "Card radius", 0, 32)}
+                  {slPr("titleSize", "Title size", 12, 28)}
+                  {slPr("bodySize", "Body size", 10, 22)}
+                  {slPr("imageWidth", "Image width (0=auto)", 0, 500)}
+                  {slPr("imageHeight", "Image height (0=auto)", 0, 500)}
+                </>
+              )}
+
+              {section === "dlaczego" && dlaczegoTab === "desktop" && (
+                <>
+                  {slDl("paddingY", "Padding Y", 0, 200)}
+                  <DlaczegoDrawingBlock
+                    label="Lightbulb"
+                    value={dlaczego.lightbulb}
+                    defaults={defaultDlaczegoConfig.lightbulb}
+                    onChange={(field, v) => setDlPart("lightbulb", field, v)}
+                  />
+                  <DlaczegoDrawingBlock
+                    label="Flower"
+                    value={dlaczego.flower}
+                    defaults={defaultDlaczegoConfig.flower}
+                    onChange={(field, v) => setDlPart("flower", field, v)}
+                  />
+                  <DlaczegoCurveBlock
+                    label="Line — Left"
+                    value={dlaczego.lineL}
+                    defaults={defaultDlaczegoConfig.lineL}
+                    onChange={(field, v) => setDlPart("lineL", field, v)}
+                  />
+                  <DlaczegoCurveBlock
+                    label="Line — Right"
+                    value={dlaczego.lineR}
+                    defaults={defaultDlaczegoConfig.lineR}
+                    onChange={(field, v) => setDlPart("lineR", field, v)}
+                  />
+                </>
+              )}
+              {section === "dlaczego" && dlaczegoTab === "mobile" && (
+                <>
+                  {slDl("paddingYMobile", "Padding Y", 0, 160)}
+                  <DlaczegoDrawingBlock
+                    label="Lightbulb"
+                    value={dlaczego.lightbulbMobile}
+                    defaults={defaultDlaczegoConfig.lightbulbMobile}
+                    onChange={(field, v) => setDlPart("lightbulbMobile", field, v)}
+                  />
+                  <DlaczegoDrawingBlock
+                    label="Flower"
+                    value={dlaczego.flowerMobile}
+                    defaults={defaultDlaczegoConfig.flowerMobile}
+                    onChange={(field, v) => setDlPart("flowerMobile", field, v)}
+                  />
+                  <DlaczegoCurveBlock
+                    label="Line — Left"
+                    value={dlaczego.lineLMobile}
+                    defaults={defaultDlaczegoConfig.lineLMobile}
+                    onChange={(field, v) => setDlPart("lineLMobile", field, v)}
+                  />
+                  <DlaczegoCurveBlock
+                    label="Line — Right"
+                    value={dlaczego.lineRMobile}
+                    defaults={defaultDlaczegoConfig.lineRMobile}
+                    onChange={(field, v) => setDlPart("lineRMobile", field, v)}
+                  />
+                </>
+              )}
+
+              {section === "taryfy" && (
+                <>
+                  {slTr("cardRadius", "Card radius", 0, 60)}
+                  {slTr("cardPaddingX", "Padding X", 8, 60)}
+                  {slTr("cardPaddingTop", "Padding top", 8, 80)}
+                  {slTr("cardPaddingBottom", "Padding bottom", 8, 80)}
+                  {slTr("cardMinHeight", "Card min height", 400, 800)}
+                  {slTr("titleSize", "Title size", 20, 72)}
+                  {slTr("subtitleSize", "Subtitle size", 10, 24)}
+                  {slTr("priceSize", "Price size", 20, 72)}
+                  {slTr("bodySize", "Body size", 10, 20)}
+                  {slTr("featureGap", "Feature gap", 4, 32)}
+                  {slTr("hiveSize", "Hive size", 60, 200)}
+                  {slTr("footerPaddingTop", "Footer top padding", 0, 80)}
+                </>
+              )}
             </div>
-          )}
+          </section>
         </div>
       )}
     </div>
@@ -1273,9 +1640,10 @@ export function SectionConfigProvider({ children }: { children: ReactNode }) {
   const [jak, setJak] = useState<JakConfig>(defaultJakConfig);
   const [prezent, setPrezent] = useState<PrezentConfig>(defaultPrezentConfig);
   const [taryfy, setTaryfy] = useState<TaryfyConfig>(defaultTaryfyConfig);
+  const [dlaczego, setDlaczego] = useState<DlaczegoConfig>(defaultDlaczegoConfig);
 
   return (
-    <Ctx.Provider value={{ hero, setHero, timeline, setTimeline, heading, setHeading, steps, setSteps, jak, setJak, prezent, setPrezent, taryfy, setTaryfy }}>
+    <Ctx.Provider value={{ hero, setHero, timeline, setTimeline, heading, setHeading, steps, setSteps, jak, setJak, prezent, setPrezent, taryfy, setTaryfy, dlaczego, setDlaczego }}>
       {children}
       <SettingsPanel />
     </Ctx.Provider>

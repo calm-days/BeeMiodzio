@@ -25,13 +25,19 @@ export function SiteHeader() {
         <div className="pointer-events-auto flex items-center gap-6 text-sm">
           <Link
             href="/na-prezent"
-            className="font-medium text-white transition-opacity hover:opacity-80"
+            className={cn(
+              "font-medium transition-colors hover:opacity-80",
+              scrolled ? "text-foreground" : "text-white",
+            )}
           >
             Na prezent
           </Link>
           <Link
             href="/dla-biznesu"
-            className="font-medium text-white transition-opacity hover:opacity-80"
+            className={cn(
+              "font-medium transition-colors hover:opacity-80",
+              scrolled ? "text-foreground" : "text-white",
+            )}
           >
             Dla biznesu
           </Link>

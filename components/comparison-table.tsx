@@ -116,7 +116,7 @@ export function ComparisonTable({
       <div
         aria-hidden
         className="pointer-events-none absolute inset-y-0 left-1/3 w-1/3 rounded-[2rem] md:left-[42.857%] md:w-[28.571%]"
-        style={{ backgroundColor: "#FBE891" }}
+        style={{ backgroundColor: "#FFF4D2" }}
       />
 
       <div className="relative grid grid-cols-3 md:grid-cols-[1.5fr_1fr_1fr]">

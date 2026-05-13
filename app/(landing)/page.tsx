@@ -128,6 +128,7 @@ const plans: {
       "Rok obsługi na pasiece i fasowka miodu",
       "2 kamery live (panorama + makro) i raporty",
       "Ponad 10 designów etykiet z personalizacją",
+      "Elektroniczny certyfikat pszczelarza",
     ],
     extras: [
       "Wybór numeru ula",
@@ -282,7 +283,7 @@ export default function HomePage() {
 
         {/* FAQ */}
         <section className="container-page py-24">
-          <h2 className="mb-4 text-center font-heading text-3xl tracking-tight md:text-4xl">
+          <h2 className="mb-4 text-center font-heading text-5xl tracking-tight md:text-6xl">
             FAQ
           </h2>
           <p className="mx-auto mb-12 max-w-xl text-center text-muted-foreground">

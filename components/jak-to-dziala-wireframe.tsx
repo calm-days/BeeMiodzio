@@ -240,7 +240,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
         <h2
           className="relative mb-16 hidden text-center font-heading tracking-tight md:block"
           style={{
-            fontSize: `${heading.scale * 0.8}rem`,
+            fontSize: `${heading.scale}rem`,
             lineHeight: heading.lineHeight,
           }}
         >
@@ -249,7 +249,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
         <h2
           className="relative mb-16 text-center font-heading tracking-tight md:hidden"
           style={{
-            fontSize: `${heading.mobileScale * 0.8}rem`,
+            fontSize: `${heading.mobileScale}rem`,
             lineHeight: heading.mobileLineHeight,
           }}
         >
