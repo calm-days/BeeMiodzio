@@ -159,8 +159,8 @@ export function BeeTrail() {
   }, [waypoints]);
 
   const resetWaypoints = useCallback(() => {
-    setWaypoints(isMobile ? [...MOBILE_WAYPOINTS] : [...DESKTOP_WAYPOINTS]);
-  }, [isMobile, setWaypoints]);
+    setWaypoints([...MOBILE_WAYPOINTS]);
+  }, [setWaypoints]);
 
   const addWaypoint = useCallback(() => {
     if (size.w === 0) return;
