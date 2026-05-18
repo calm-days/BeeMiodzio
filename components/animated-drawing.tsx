@@ -28,9 +28,9 @@ export function AnimatedDrawing({
   const canTrigger = useRef(true);
   const swapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const inSrc = `/dlaczego-zdrowy/${name}-in-yellow.png`;
-  const idleSrc = `/dlaczego-zdrowy/${name}-default-yellow.png`;
-  const staticSrc = `/dlaczego-zdrowy/${name}-yellow.png`;
+  const inSrc = `/dlaczego-zdrowy/${name}-in-yellow.webp`;
+  const idleSrc = `/dlaczego-zdrowy/${name}-default-yellow.webp`;
+  const staticSrc = `/dlaczego-zdrowy/${name}-yellow.webp`;
 
   useEffect(() => {
     if (!flags.animations) return;

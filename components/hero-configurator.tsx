@@ -85,7 +85,7 @@ export function HeroConfigurator() {
         }}
       >
         <Image
-          src="/hero-meadow.png"
+          src="/hero-meadow.webp"
           alt=""
           fill
           className="object-cover"
@@ -107,7 +107,7 @@ export function HeroConfigurator() {
         }}
       >
         <Image
-          src="/hero-meadow-fg.png"
+          src="/hero-meadow-fg.webp"
           alt=""
           fill
           className="object-cover"

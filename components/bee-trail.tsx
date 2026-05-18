@@ -376,7 +376,7 @@ export function BeeTrail() {
         }}
       >
         <Image
-          src="/bee.png"
+          src="/bee.webp"
           alt=""
           width={BEE_SIZE}
           height={BEE_SIZE}

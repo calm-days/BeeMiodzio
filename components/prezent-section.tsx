@@ -9,17 +9,17 @@ const gifts = [
   {
     label: "Dla kogoś, kto ma już wszystko",
     desc: "Coś co będzie wspominał przez lata. Własny ul i prawdziwy miód — z jego imieniem na etykiecie.",
-    image: "/prezent/1.png",
+    image: "/prezent/1.webp",
   },
   {
     label: "Dla dziecka",
     desc: "Najlepsza lekcja przyrody, jaką można mieć. Obserwują, kibicują, a jesienią dostają słoiczek z miodem — od swoich pszczół!",
-    image: "/prezent/2.png",
+    image: "/prezent/2.webp",
   },
   {
     label: "Dla mamy lub taty",
     desc: "Dzieci wyleciały z gniazda. Czas zadbać o kogoś innego. Nowe hobby, poczucie troski i zapas prawdziwego miodu na co dzień.",
-    image: "/prezent/3.png",
+    image: "/prezent/3.webp",
   },
 ];
 

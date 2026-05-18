@@ -124,7 +124,7 @@ export function ComparisonTable({
         <div />
         <div className="flex h-36 items-end justify-center px-4 pt-2 pb-2 md:h-44">
           <Image
-            src="/sloik-beemiodzio.png"
+            src="/sloik-beemiodzio.webp"
             alt="Słoik miodu BeeMiodzio"
             width={520}
             height={749}
@@ -133,7 +133,7 @@ export function ComparisonTable({
         </div>
         <div className="flex h-36 items-end justify-center px-4 pt-2 pb-2 md:h-44">
           <Image
-            src="/miod-z-polki.png"
+            src="/miod-z-polki.webp"
             alt="Anonimowy słoik z półki"
             width={200}
             height={200}

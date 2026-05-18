@@ -35,32 +35,32 @@ const timelineSteps = [
   {
     label: "Po zakupie",
     text: "Dostajesz dostęp do panelu swojego ula — stamtąd śledzisz wszystko, co dzieje się na pasiece.",
-    image: "/co%20i%20kiedy/hf_20260428_195943_8c36f544-b995-40c6-a51a-bc8502acd3c5.png",
+    image: "/co%20i%20kiedy/hf_20260428_195943_8c36f544-b995-40c6-a51a-bc8502acd3c5.webp",
   },
   {
     label: "W ciągu tygodnia",
     text: "Dostajesz paczkę powitalną: certyfikat pszczelarza, słoiczek miodu na dobry początek i mały prezent od pszczół :)",
-    image: "/co%20i%20kiedy/hf_20260428_182920_80677118-880e-42ad-ac9d-d40b6cb219ae.png",
+    image: "/co%20i%20kiedy/hf_20260428_182920_80677118-880e-42ad-ac9d-d40b6cb219ae.webp",
   },
   {
     label: "Czekając na sezon",
     text: "Na pasiece cisza — pszczoły odpoczywają po sezonie. Ale w Twoim panelu sporo się dzieje: wybierasz słoiczki, projektujesz etykiety (gotowe z Twoim imieniem albo własny design) i poznajesz świat pszczół od kuchni.",
-    image: "/co%20i%20kiedy/hf_20260428_181454_10b36ae2-061a-490f-acf6-a110bd9305fa.png",
+    image: "/co%20i%20kiedy/hf_20260428_181454_10b36ae2-061a-490f-acf6-a110bd9305fa.webp",
   },
   {
     label: "Kwiecień — maj",
     text: "Pszczoły się budzą! Regularnie dostajesz zdjęcia i filmy z pasieki i okolicy — widzisz, jak Twój ul zaczyna nowy sezon.",
-    image: "/co%20i%20kiedy/hf_20260429_102307_e5a85e9e-3235-4528-80e5-859c47d5cec5.png",
+    image: "/co%20i%20kiedy/hf_20260429_102307_e5a85e9e-3235-4528-80e5-859c47d5cec5.webp",
   },
   {
     label: "Czerwiec — sierpień",
     text: "Pszczoły zbierają nektar, Twój ul przybiera na wadze — kilogram po kilogramie. Śledzisz to w panelu, a na kamerach widzisz, ile ruchu mają pszczoły.",
-    image: "/co%20i%20kiedy/hf_20260429_102323_b0e1b3b0-6351-4193-8f88-68f20ee89ff0.png",
+    image: "/co%20i%20kiedy/hf_20260429_102323_b0e1b3b0-6351-4193-8f88-68f20ee89ff0.webp",
   },
   {
     label: "Koniec września",
     text: "Czas na zbiór! Rozlewamy go do słoiczków, naklejamy etykiety, które wybrałeś, i wysyłamy.",
-    image: "/co%20i%20kiedy/hf_20260429_070534_89ed67d4-327e-4159-a659-a25c9d7aa353.png",
+    image: "/co%20i%20kiedy/hf_20260429_070534_89ed67d4-327e-4159-a659-a25c9d7aa353.webp",
   },
 ];
 

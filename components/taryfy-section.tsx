@@ -20,7 +20,7 @@ const ACCENT_GREEN = "#3BA56B";
 const ACCENT_AMBER = "#C68A14";
 const CARD_BG = "#FFF4D2";
 
-const HIVE_IMAGES = ["/taryfy/1:8.png", "/taryfy/1:3.png", "/taryfy/caly.png"] as const;
+const HIVE_IMAGES = ["/taryfy/1:8.webp", "/taryfy/1:3.webp", "/taryfy/caly.webp"] as const;
 const TIER_MIN_HEIGHT = [620, 680, 740] as const;
 
 function CheckIcon() {

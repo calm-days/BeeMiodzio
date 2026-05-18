@@ -224,7 +224,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
     <section className="relative py-24">
       <div className="absolute inset-x-0 bottom-0 -top-[200px] -z-20 overflow-hidden">
         <Image
-          src="/jak-to-dziala-bg2.png"
+          src="/jak-to-dziala-bg2.webp"
           alt=""
           fill
           className="object-cover object-top"
@@ -268,14 +268,14 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
               style={{ gap: cfg.r1.cellGap, order: cfg.r1.imageLeft ? 1 : 2 }}
             >
               <Img
-                src="/jak%20to%20dziala/ule.png"
+                src="/jak%20to%20dziala/ule.webp"
                 alt="Ule na leśnej pasiece"
                 cfg={cfg.r1.img1}
                 radius={cfg.radius}
               />
               {cfg.r1.img2 && (
                 <Img
-                  src="/jak%20to%20dziala/hf_20260428_200222_0f56bf96-3248-4d18-89c5-277d41d19793.png"
+                  src="/jak%20to%20dziala/hf_20260428_200222_0f56bf96-3248-4d18-89c5-277d41d19793.webp"
                   alt="Certyfikat w eleganckim pudełku"
                   cfg={cfg.r1.img2}
                   radius={cfg.radius}
@@ -302,14 +302,14 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
               style={{ gap: cfg.r2.cellGap, order: cfg.r2.imageLeft ? 1 : 2 }}
             >
               <Img
-                src="/jak%20to%20dziala/piotr.png"
+                src="/jak%20to%20dziala/piotr.webp"
                 alt="Pszczelarz Piotr na pasiece"
                 cfg={cfg.r2.img1}
                 radius={cfg.radius}
               />
               {cfg.r2.img2 && (
                 <Img
-                  src="/jak%20to%20dziala/Screenshot%202026-04-23%20at%2016.29.53.png"
+                  src="/jak%20to%20dziala/Screenshot%202026-04-23%20at%2016.29.53.webp"
                   alt="Mapa pasieki z lotu ptaka"
                   cfg={cfg.r2.img2}
                   radius={cfg.radius}
@@ -329,7 +329,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
                     }}
                   >
                     <Image
-                      src="/pin-on-map.png"
+                      src="/pin-on-map.webp"
                       alt=""
                       width={400}
                       height={400}
@@ -359,7 +359,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
               style={{ order: cfg.r3.imageLeft ? 1 : 2 }}
             >
               <Img
-                src="/jak%20to%20dziala/hf_20260428_180817_bf93eb1d-e357-464b-a182-03247fa6d4e8.png"
+                src="/jak%20to%20dziala/hf_20260428_180817_bf93eb1d-e357-464b-a182-03247fa6d4e8.webp"
                 alt="Telefon z panelem klienta — Twój ul #5"
                 cfg={cfg.r3.img1}
                 radius={cfg.radius}
@@ -385,14 +385,14 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
               style={{ gap: cfg.r4.cellGap, order: cfg.r4.imageLeft ? 1 : 2 }}
             >
               <Img
-                src="/jak%20to%20dziala/shipment.png"
+                src="/jak%20to%20dziala/shipment.webp"
                 alt="Słoiczki miodu w pudełku wysyłkowym"
                 cfg={cfg.r4.img1}
                 radius={cfg.radius}
               />
               {cfg.r4.img2 && (
                 <Img
-                  src="/jak%20to%20dziala/hf_20260429_063236_ba207393-d1ff-43e9-8bc5-34d5e8186f44.png"
+                  src="/jak%20to%20dziala/hf_20260429_063236_ba207393-d1ff-43e9-8bc5-34d5e8186f44.webp"
                   alt="Personalizowany słoik miodu"
                   cfg={cfg.r4.img2}
                   radius={cfg.radius}
@@ -430,9 +430,9 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
             titleSize={cfg.mobile.titleSize}
             bodySize={cfg.mobile.bodySize}
             textMaxW={cfg.mobile.textMaxW}
-            img1={{ src: "/jak%20to%20dziala/ule.png", alt: "Ule na leśnej pasiece" }}
+            img1={{ src: "/jak%20to%20dziala/ule.webp", alt: "Ule na leśnej pasiece" }}
             img2={{
-              src: "/jak%20to%20dziala/hf_20260428_200222_0f56bf96-3248-4d18-89c5-277d41d19793.png",
+              src: "/jak%20to%20dziala/hf_20260428_200222_0f56bf96-3248-4d18-89c5-277d41d19793.webp",
               alt: "Certyfikat w eleganckim pudełku",
             }}
           />
@@ -445,11 +445,11 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
             bodySize={cfg.mobile.bodySize}
             textMaxW={cfg.mobile.textMaxW}
             img1={{
-              src: "/jak%20to%20dziala/piotr.png",
+              src: "/jak%20to%20dziala/piotr.webp",
               alt: "Pszczelarz Piotr na pasiece",
             }}
             img2={{
-              src: "/jak%20to%20dziala/Screenshot%202026-04-23%20at%2016.29.53.png",
+              src: "/jak%20to%20dziala/Screenshot%202026-04-23%20at%2016.29.53.webp",
               alt: "Mapa pasieki z lotu ptaka",
               overlay: (
                 <motion.div
@@ -467,7 +467,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
                   }}
                 >
                   <Image
-                    src="/pin-on-map.png"
+                    src="/pin-on-map.webp"
                     alt=""
                     width={400}
                     height={400}
@@ -486,7 +486,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
             bodySize={cfg.mobile.bodySize}
             textMaxW={cfg.mobile.textMaxW}
             img1={{
-              src: "/jak%20to%20dziala/hf_20260428_180817_bf93eb1d-e357-464b-a182-03247fa6d4e8.png",
+              src: "/jak%20to%20dziala/hf_20260428_180817_bf93eb1d-e357-464b-a182-03247fa6d4e8.webp",
               alt: "Telefon z panelem klienta — Twój ul #5",
             }}
           />
@@ -499,11 +499,11 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
             bodySize={cfg.mobile.bodySize}
             textMaxW={cfg.mobile.textMaxW}
             img1={{
-              src: "/jak%20to%20dziala/shipment.png",
+              src: "/jak%20to%20dziala/shipment.webp",
               alt: "Słoiczki miodu w pudełku wysyłkowym",
             }}
             img2={{
-              src: "/jak%20to%20dziala/hf_20260429_063236_ba207393-d1ff-43e9-8bc5-34d5e8186f44.png",
+              src: "/jak%20to%20dziala/hf_20260429_063236_ba207393-d1ff-43e9-8bc5-34d5e8186f44.webp",
               alt: "Personalizowany słoik miodu",
             }}
           />

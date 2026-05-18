@@ -24,7 +24,7 @@ export function DlaczegoZdrowyCta() {
       style={{ paddingTop: paddingY, paddingBottom: paddingY }}
     >
       <Image
-        src="/dlaczego-zdrowy/line-L.png"
+        src="/dlaczego-zdrowy/line-L.webp"
         alt=""
         aria-hidden="true"
         width={668}
@@ -39,7 +39,7 @@ export function DlaczegoZdrowyCta() {
         }}
       />
       <Image
-        src="/dlaczego-zdrowy/line-R.png"
+        src="/dlaczego-zdrowy/line-R.webp"
         alt=""
         aria-hidden="true"
         width={832}
