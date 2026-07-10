@@ -92,11 +92,11 @@ export function PrezentSection() {
         })}
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-3">
+      <div className="mx-auto mt-4 flex max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:items-center sm:justify-center">
         <Button
           size="lg"
           arrow
-          className="h-14 px-10 text-base"
+          className="h-14 w-full px-10 text-base sm:w-auto"
           render={<Link href="/checkout" />}
         >
           Podaruj ul
@@ -105,7 +105,7 @@ export function PrezentSection() {
           variant="secondary"
           size="lg"
           arrow
-          className="h-14 px-10 text-base shadow-[inset_0_0_0_1px_var(--foreground)]"
+          className="h-14 w-full px-10 text-base shadow-[inset_0_0_0_1px_var(--foreground)] sm:w-auto"
           render={<Link href="/prezent" />}
         >
           Dowiedz się więcej

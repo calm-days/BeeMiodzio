@@ -33,6 +33,7 @@ export function TimelineSection({ steps }: Props) {
 
   const cardW = config.cardWidth;
   const gap = config.cardGap;
+  const isMobile = vw < 768;
   const rotations = BASE_ROTATIONS.map((r) => r * config.rotationMax);
 
   useEffect(() => {
@@ -48,7 +49,11 @@ export function TimelineSection({ steps }: Props) {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  const xStart = vw - startPad - cardW / 2;
+  // Mobile: first card begins fully off the right edge so the giant title reads
+  // before cards slide in. Desktop: first card sits half-visible at the right edge.
+  const xStart = isMobile
+    ? vw - startPad + gap
+    : vw - startPad - cardW / 2;
   // 1.5 cards visible — sticky releases here, global scroll resumes
   const xRelease = -(startPad + (steps.length - 2) * (cardW + gap) + cardW / 2);
   // All cards off screen — cards keep drifting to this point after release
@@ -57,10 +62,15 @@ export function TimelineSection({ steps }: Props) {
 
   const x = useTransform(scrollYProgress, [0, 1], [xStart, xEnd]);
 
-  const textStyle = {
-    fontSize: `clamp(6rem, ${config.textSize}vw, ${config.textSize * 1.15}rem)`,
-    lineHeight: config.textLeading,
-  };
+  const textStyle = isMobile
+    ? {
+        fontSize: "clamp(2.75rem, 13vw, 3.75rem)",
+        lineHeight: config.textLeading,
+      }
+    : {
+        fontSize: `clamp(6rem, ${config.textSize}vw, ${config.textSize * 1.15}rem)`,
+        lineHeight: config.textLeading,
+      };
 
   if (!flags.animations) {
     return (

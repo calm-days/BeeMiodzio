@@ -65,7 +65,24 @@ function catmullRomToSvg(pts: Waypoint[], w: number, h: number): string {
   return d;
 }
 
+// Safari (and other WebKit browsers) repaint the scroll-driven SVG path far too
+// slowly — getPointAtLength on every scroll frame plus per-frame layout tanks the
+// framerate. Detect it and skip mounting the animation entirely on those browsers.
+function useIsSafari() {
+  const [isSafari, setIsSafari] = useState(false);
+  useEffect(() => {
+    setIsSafari(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
+  }, []);
+  return isSafari;
+}
+
 export function BeeTrail() {
+  const isSafari = useIsSafari();
+  if (isSafari) return null;
+  return <BeeTrailInner />;
+}
+
+function BeeTrailInner() {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const pathRef = useRef<SVGPathElement>(null);

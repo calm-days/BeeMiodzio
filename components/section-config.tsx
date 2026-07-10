@@ -79,7 +79,7 @@ export const defaultHeroConfig: HeroConfig = {
   bzzSize: 20,
   groundY: 30,
   mobileLogoHeight: 50,
-  mobileMinHeight: 118,
+  mobileMinHeight: 136,
   mobileHeadingSize: 54,
   mobileHeadingLineHeight: 1.05,
   mobileSubheadingSize: 13,
@@ -176,7 +176,7 @@ export const defaultHeadingConfig: HeadingConfig = {
   stiffness: 110,
   damping: 20,
   mass: 1,
-  mobileScale: 3.75,
+  mobileScale: 2.5,
   mobileLineHeight: 0.9,
   mobileMarginBottom: 2,
   mobileWordGap: 0.17,
@@ -1060,6 +1060,11 @@ function DlaczegoCurveBlock({
   );
 }
 
+// Dev-only design inspector: the floating gear (top-right) that opens the
+// per-section slider panel. Off by default so the tune UI never shows on the
+// live site or clutters mobile — flip to `true` to tune again (hot-reloads).
+const SHOW_INSPECTOR = false;
+
 function SettingsPanel() {
   const [hero, setHero] = useHeroConfig();
   const [timeline, setTimeline] = useTimelineConfig();
@@ -1645,7 +1650,7 @@ export function SectionConfigProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={{ hero, setHero, timeline, setTimeline, heading, setHeading, steps, setSteps, jak, setJak, prezent, setPrezent, taryfy, setTaryfy, dlaczego, setDlaczego }}>
       {children}
-      <SettingsPanel />
+      {SHOW_INSPECTOR && <SettingsPanel />}
     </Ctx.Provider>
   );
 }
