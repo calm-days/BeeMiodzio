@@ -189,24 +189,3 @@
   90%  { opacity: 0; transform: rotate(22deg) translate(80px, 5px); }
   100% { opacity: 0; transform: rotate(10deg) translate(30px, 15px); }
 }
-
-/* Keep the same pinning range without a viewport-constrained layer. Safari can
-   then render the moving page beneath its translucent browser controls. */
-@supports (animation-timeline: view()) {
-  .timeline-scroll-section {
-    view-timeline-name: --delivery-timeline;
-    view-timeline-axis: block;
-  }
-
-  .timeline-scroll-panel {
-    position: relative;
-    animation: delivery-pin linear both;
-    animation-timeline: --delivery-timeline;
-    animation-range: contain;
-  }
-}
-
-@keyframes delivery-pin {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(0, calc(var(--timeline-travel) - 100dvh), 0); }
-}

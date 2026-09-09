@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, type CSSProperties } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
 import { flags } from "@/lib/flags";
@@ -107,97 +107,103 @@ export function TimelineSection({ steps }: Props) {
   return (
     <section
       ref={containerRef}
-      style={{ height: `${travel}px`, "--timeline-travel": `${travel}px` } as CSSProperties}
+      style={{ height: `${travel}px` }}
       className="timeline-scroll-section relative bg-primary"
     >
-      <div className="timeline-scroll-panel sticky top-0 isolate flex h-dvh flex-col overflow-hidden">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-primary" />
-        {/* Giant background text */}
-        <div
-          className="pointer-events-none absolute inset-0 flex flex-col justify-center overflow-hidden select-none"
-          aria-hidden="true"
-        >
-          {["CO I KIEDY", "OTRZYMASZ"].map((line) => (
-            <span
-              key={line}
-              className="block whitespace-nowrap pl-[max(var(--page-px),calc((100vw-var(--page-max-w))/2))] font-heading text-black uppercase"
-              style={textStyle}
+      {/* A zero-size sticky anchor avoids Safari's full-width toolbar sampling.
+          The shorter track preserves the original release point. */}
+      <div className="relative h-[calc(100%-100dvh)]">
+        <div className="sticky top-0 h-0 w-0">
+          <div className="timeline-scroll-panel relative isolate flex h-dvh w-screen flex-col overflow-hidden">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-primary" />
+            {/* Giant background text */}
+            <div
+              className="pointer-events-none absolute inset-0 flex flex-col justify-center overflow-hidden select-none"
+              aria-hidden="true"
             >
-              {line}
-            </span>
-          ))}
-        </div>
+              {["CO I KIEDY", "OTRZYMASZ"].map((line) => (
+                <span
+                  key={line}
+                  className="block whitespace-nowrap pl-[max(var(--page-px),calc((100vw-var(--page-max-w))/2))] font-heading text-black uppercase"
+                  style={textStyle}
+                >
+                  {line}
+                </span>
+              ))}
+            </div>
 
-        {/* Brand label — top */}
-        <div className="container-page relative z-20 pt-12">
-          <p
-            className="font-semibold tracking-[0.3em] text-primary-foreground uppercase"
-            style={{ fontSize: `${config.labelSize}px` }}
-          >
-            Chodź, pokażemy Ci wszystko krok po kroku!
-          </p>
-        </div>
-
-        {/* Cards strip — vertically centered */}
-        <div className="relative z-10 flex flex-1 items-center">
-          <motion.div
-            style={{
-              x,
-              paddingLeft:
-                "max(var(--page-px), calc((100vw - var(--page-max-w)) / 2))",
-            }}
-            className="flex items-start"
-          >
-            {steps.map((step, i) => (
-              <article
-                key={step.label}
-                style={{
-                  width: cardW,
-                  minWidth: cardW,
-                  marginLeft: i > 0 ? gap : 0,
-                  padding: `${config.cardPadding}px`,
-                  transform: `rotate(${rotations[i % rotations.length]}deg)`,
-                }}
-                className="shrink-0 rounded-2xl bg-white shadow-2xl"
+            {/* Brand label — top */}
+            <div className="container-page relative z-20 pt-12">
+              <p
+                className="font-semibold tracking-[0.3em] text-primary-foreground uppercase"
+                style={{ fontSize: `${config.labelSize}px` }}
               >
-                <h3
-                  className="mb-3 tracking-wide text-neutral-900 uppercase"
-                  style={{
-                    fontSize: `${config.cardTitleSize}px`,
-                    fontWeight: config.cardTitleWeight,
-                  }}
-                >
-                  {step.label}
-                </h3>
-                <div className="relative mb-4">
-                  <span className="absolute -left-1 -top-1 z-10 inline-flex items-center bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-sm bg-neutral-200">
-                    {step.image && (
-                      <Image src={step.image} alt={step.label} fill className="object-cover" sizes="400px" />
-                    )}
-                  </div>
-                </div>
-                <p
-                  className="leading-relaxed text-neutral-600"
-                  style={{ fontSize: `${config.cardBodySize}px` }}
-                >
-                  {step.text}
-                </p>
-              </article>
-            ))}
-          </motion.div>
-        </div>
+                Chodź, pokażemy Ci wszystko krok po kroku!
+              </p>
+            </div>
 
-        {/* Brand label — bottom */}
-        <div className="container-page relative z-20 pb-10 text-right">
-          <p
-            className="font-semibold tracking-[0.3em] text-primary-foreground uppercase"
-            style={{ fontSize: `${config.labelSize}px` }}
-          >
-            Od zakupu do słoika
-          </p>
+            {/* Cards strip — vertically centered */}
+            <div className="relative z-10 flex flex-1 items-center">
+              <motion.div
+                style={{
+                  x,
+                  paddingLeft:
+                    "max(var(--page-px), calc((100vw - var(--page-max-w)) / 2))",
+                }}
+                className="flex items-start"
+              >
+                {steps.map((step, i) => (
+                  <article
+                    key={step.label}
+                    style={{
+                      width: cardW,
+                      minWidth: cardW,
+                      marginLeft: i > 0 ? gap : 0,
+                      padding: `${config.cardPadding}px`,
+                      transform: `rotate(${rotations[i % rotations.length]}deg)`,
+                    }}
+                    className="shrink-0 rounded-2xl bg-white shadow-2xl"
+                  >
+                    <h3
+                      className="mb-3 tracking-wide text-neutral-900 uppercase"
+                      style={{
+                        fontSize: `${config.cardTitleSize}px`,
+                        fontWeight: config.cardTitleWeight,
+                      }}
+                    >
+                      {step.label}
+                    </h3>
+                    <div className="relative mb-4">
+                      <span className="absolute -left-1 -top-1 z-10 inline-flex items-center bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-sm bg-neutral-200">
+                        {step.image && (
+                          <Image src={step.image} alt={step.label} fill className="object-cover" sizes="400px" />
+                        )}
+                      </div>
+                    </div>
+                    <p
+                      className="leading-relaxed text-neutral-600"
+                      style={{ fontSize: `${config.cardBodySize}px` }}
+                    >
+                      {step.text}
+                    </p>
+                  </article>
+                ))}
+              </motion.div>
+            </div>
+
+            {/* Brand label — bottom */}
+            <div className="container-page relative z-20 pb-10 text-right">
+              <p
+                className="font-semibold tracking-[0.3em] text-primary-foreground uppercase"
+                style={{ fontSize: `${config.labelSize}px` }}
+              >
+                Od zakupu do słoika
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
