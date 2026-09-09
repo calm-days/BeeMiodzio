@@ -303,7 +303,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
             >
               <Img
                 src="/jak%20to%20dziala/piotr.webp"
-                alt="Pszczelarz Piotr na pasiece"
+                alt="Pszczelarz Andrzej na pasiece"
                 cfg={cfg.r2.img1}
                 radius={cfg.radius}
               />
@@ -446,7 +446,7 @@ export function JakToDzialaWireframe({ steps }: { steps: Step[] }) {
             textMaxW={cfg.mobile.textMaxW}
             img1={{
               src: "/jak%20to%20dziala/piotr.webp",
-              alt: "Pszczelarz Piotr na pasiece",
+              alt: "Pszczelarz Andrzej na pasiece",
             }}
             img2={{
               src: "/jak%20to%20dziala/Screenshot%202026-04-23%20at%2016.29.53.webp",

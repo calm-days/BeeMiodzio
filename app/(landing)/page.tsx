@@ -16,8 +16,8 @@ const howItWorks = [
     text: "Od razu dostajesz certyfikat pszczelarza – cyfrowy albo w eleganckim pudełku na prezent wraz z porcją miodu na początek.",
   },
   {
-    title: "Twój ul stoi na stacjonarnej leśnej pasiece na Dolnym Śląsku.",
-    text: "Naniesiemy numer, który sam wybierzesz — po nim znajdziesz go na fotkach albo kiedy przyjedziesz na pasiekę osobiście. Pszczelarz Piotr opiekuje się nim codziennie, a Ty widzisz to w raportach.",
+    title: "Twój ul stoi na stacjonarnej leśnej pasiece w Wielkopolsce.",
+    text: "Naniesiemy numer, który sam wybierzesz — po nim znajdziesz go na fotkach albo kiedy przyjedziesz na pasiekę osobiście. Pszczelarz Andrzej opiekuje się nim codziennie, a Ty widzisz to w raportach.",
   },
   {
     title: "Oglądasz, jak powstaje Twój miód przez cały sezon z bliska.",
@@ -76,7 +76,7 @@ const comparisonRows = [
     attribute: "Naturalne warunki dla pszczół",
     bad: "Plastik, syrop, chemia",
     good: "Drewniane ule · własny miód · zero chemii",
-    goodInfo: "Nasz miód jest inny. Jedna rodzinna pasieka na Dolnym Śląsku, pszczoły, które codziennie widzisz na kamerach. Bez importu, bez mieszanek, bez syropów, bez ultrafiltracji. Co roku trafia do akredytowanego laboratorium — więc wiesz dokładnie, co trafia do Twojego słoiczka.",
+    goodInfo: "Nasz miód jest inny. Jedna rodzinna pasieka w Wielkopolsce, pszczoły, które codziennie widzisz na kamerach. Bez importu, bez mieszanek, bez syropów, bez ultrafiltracji. Co roku trafia do akredytowanego laboratorium — więc wiesz dokładnie, co trafia do Twojego słoiczka.",
   },
   { attribute: "Surowy, niefiltrowany miód", bad: "Ultrafiltracja", good: "✓", badInfo: <>Większość miodu z supermarketu przechodzi ultrafiltrację — proces, który usuwa pyłek, a razem z nim właściwości zdrowotne i jakikolwiek ślad pochodzenia.<br /><br />Wygląda pięknie na półce, ale nie wiadomo ani skąd jest, ani co w nim zostało. Do tego ponad 50% tego miodu pochodzi z Chin.</> },
   { attribute: "Badanie laboratoryjne", bad: "✗", good: "✓" },
@@ -169,7 +169,7 @@ const faqItems: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: "Kto opiekuje się moimi pszczołami?",
-    a: "Pszczelarz Piotr — konkretny człowiek, którego widzisz na kamerze, w raportach i na zdjęciach z pasieki. Prowadzi stacjonarną leśną pasiekę na Dolnym Śląsku od lat. Drewniane ule, naturalna ochrona, zero chemii. Pszczoły zimują na własnym miodzie — nie na syropie cukrowym. Zna każdy ul osobiście.",
+    a: "Pszczelarz Andrzej — konkretny człowiek, którego widzisz na kamerze, w raportach i na zdjęciach z pasieki. Prowadzi stacjonarną leśną pasiekę w Wielkopolsce od lat. Drewniane ule, naturalna ochrona, zero chemii. Pszczoły zimują na własnym miodzie — nie na syropie cukrowym. Zna każdy ul osobiście.",
   },
   {
     q: "Kiedy i jak dostanę miód?",
