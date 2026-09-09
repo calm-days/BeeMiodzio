@@ -9,8 +9,8 @@ import { useHeroConfig } from "@/components/section-config";
 import { HeroWave } from "@/components/hero-wave";
 
 // Hero image natural dimensions (both bg and fg are the same size)
-const IMG_W = 4800;
-const IMG_H = 3584;
+const IMG_W = 2400;
+const IMG_H = 1792;
 const IMG_ASPECT = IMG_W / IMG_H;
 
 export function HeroConfigurator() {
@@ -28,7 +28,7 @@ export function HeroConfigurator() {
       const section = sectionRef.current;
       if (!section) return;
       const vw = window.innerWidth;
-      const sh = section.offsetHeight;
+      const sh = bgWrapRef.current?.offsetHeight ?? section.offsetHeight;
       const sectionAspect = vw / sh;
 
       let w: number, h: number, x: number, y: number;
@@ -57,6 +57,13 @@ export function HeroConfigurator() {
       window.removeEventListener("resize", update);
     };
   }, []);
+
+  // object-cover scales to the full image width, not the narrow visible crop.
+  const imageSizes = `(max-width: 1023px) max(100vw, calc(${config.mobileMinHeight * IMG_ASPECT}dvh + ${config.waveOverflowY * IMG_ASPECT}px)), max(100vw, calc(${config.sectionMinHeight * IMG_ASPECT}vh + ${config.waveOverflowY * IMG_ASPECT}px))`;
+  // Roof edge behind the descender of the "p" in the mobile heading.
+  const mobileRoofY = stage.h > 0
+    ? `${stage.y + stage.h * 0.283}px`
+    : `max(21.13vw, ${config.mobileMinHeight * 0.283}dvh)`;
 
   return (
     <section
@@ -89,7 +96,9 @@ export function HeroConfigurator() {
           alt=""
           fill
           className="object-cover"
-          priority
+          sizes={imageSizes}
+          quality={90}
+          preload
         />
       </div>
 
@@ -111,7 +120,9 @@ export function HeroConfigurator() {
           alt=""
           fill
           className="object-cover"
-          priority
+          sizes={imageSizes}
+          quality={90}
+          preload
         />
       </div>
 
@@ -318,21 +329,22 @@ export function HeroConfigurator() {
           animate={{ filter: "blur(0px)", opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           style={{
-            top: `${config.mobilePaddingTop}px`,
+            top: `calc(${mobileRoofY} + 8px)`,
+            transform: "translateY(-100%)",
             paddingLeft: `${config.mobilePaddingX}px`,
             paddingRight: `${config.mobilePaddingX}px`,
           }}
         >
           <p
             className="mb-3 font-medium uppercase tracking-widest text-white/80"
-            style={{ fontSize: `${config.mobileSubheadingSize}px` }}
+            style={{ fontSize: `${Math.min(config.mobileSubheadingSize, 11)}px` }}
           >
             Pierwszy i jedyny Bee Sharing w Polsce
           </p>
           <h1
             className="font-heading tracking-tight text-white"
             style={{
-              fontSize: `${config.mobileHeadingSize}px`,
+              fontSize: `clamp(32px, calc((${mobileRoofY} + 8px - ${config.mobilePaddingTop}px - ${Math.min(config.mobileSubheadingSize, 11) * 1.5 + 12}px) / ${3 * config.mobileHeadingLineHeight}), ${config.mobileHeadingSize}px)`,
               lineHeight: config.mobileHeadingLineHeight,
             }}
           >

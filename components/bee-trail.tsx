@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, useId } from "react";
 import { useScroll, useTransform, useMotionValueEvent } from "motion/react";
 import Image from "next/image";
 
@@ -65,24 +65,11 @@ function catmullRomToSvg(pts: Waypoint[], w: number, h: number): string {
   return d;
 }
 
-// Safari (and other WebKit browsers) repaint the scroll-driven SVG path far too
-// slowly — getPointAtLength on every scroll frame plus per-frame layout tanks the
-// framerate. Detect it and skip mounting the animation entirely on those browsers.
-function useIsSafari() {
-  const [isSafari, setIsSafari] = useState(false);
-  useEffect(() => {
-    setIsSafari(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
-  }, []);
-  return isSafari;
-}
-
 export function BeeTrail() {
-  const isSafari = useIsSafari();
-  if (isSafari) return null;
-  return <BeeTrailInner />;
-}
-
-function BeeTrailInner() {
+  const maskId = useId();
+  const beeRef = useRef<HTMLDivElement>(null);
+  const samplesRef = useRef<Waypoint[]>([]);
+  const posRef = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
@@ -93,7 +80,6 @@ function BeeTrailInner() {
   const waypoints = mobileWaypoints;
   const setWaypoints = setMobileWaypoints;
 
-  const [pos, setPos] = useState({ x: 0, y: 0, flip: false });
   const [totalLength, setTotalLength] = useState(0);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -131,26 +117,38 @@ function BeeTrailInner() {
 
   useEffect(() => {
     if (!pathRef.current || size.w === 0) return;
-    setTotalLength(pathRef.current.getTotalLength());
+    const path = pathRef.current;
+    const length = path.getTotalLength();
+    // Sample once per geometry change, at most two CSS pixels apart.
+    const count = Math.ceil(length / 2);
+    samplesRef.current = Array.from({ length: count + 1 }, (_, i) => {
+      const point = path.getPointAtLength((i / count) * length);
+      return { x: point.x, y: point.y };
+    });
+    setTotalLength(length);
   }, [size, isMobile, mobileWaypoints]);
 
   const updateBee = useCallback(
     (p: number) => {
-      const path = pathRef.current;
+      const bee = beeRef.current;
       const trail = trailRef.current;
-      if (!path || !trail || totalLength === 0) return;
+      const samples = samplesRef.current;
+      if (!bee || !trail || totalLength === 0 || samples.length < 2) return;
 
       const len = p * totalLength;
-      const pt = path.getPointAtLength(len);
-
-      const lookAhead = Math.min(len + 20, totalLength);
-      const behind = Math.max(len - 20, 0);
-      const ptA = path.getPointAtLength(behind);
-      const ptB = path.getPointAtLength(lookAhead);
-      const rawAngle = Math.atan2(ptB.y - ptA.y, ptB.x - ptA.x) * (180 / Math.PI);
-      const flip = Math.abs(rawAngle) > 90;
-
-      setPos({ x: pt.x, y: pt.y, flip });
+      const pointAt = (length: number) => {
+        const index = Math.max(0, Math.min(1, length / totalLength)) * (samples.length - 1);
+        const low = Math.floor(index);
+        const a = samples[low];
+        const b = samples[Math.min(low + 1, samples.length - 1)];
+        const t = index - low;
+        return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+      };
+      const pt = pointAt(len);
+      const flip = pointAt(len + 20).x < pointAt(len - 20).x;
+      posRef.current = pt;
+      bee.style.transform = `translate3d(${pt.x - BEE_SIZE / 2}px, ${pt.y - BEE_SIZE * 0.65}px, 0) scaleX(${flip ? -1 : 1})`;
+      bee.style.visibility = "visible";
 
       const trailGap = BEE_SIZE * 0.6;
       const revealed = Math.max(0, len - trailGap);
@@ -183,8 +181,8 @@ function BeeTrailInner() {
     if (size.w === 0) return;
     // Convert bee pixel position → waypoint coordinate space
     const beeWp: Waypoint = {
-      x: Math.round(pos.x * 1000 / size.w),
-      y: Math.round(pos.y * 800 / size.h),
+      x: Math.round(posRef.current.x * 1000 / size.w),
+      y: Math.round(posRef.current.y * 800 / size.h),
     };
     setWaypoints(prev => {
       // Find the segment the bee is closest to and insert there
@@ -198,7 +196,7 @@ function BeeTrailInner() {
       next.splice(insertAt, 0, beeWp);
       return next;
     });
-  }, [pos, size, setWaypoints]);
+  }, [size, setWaypoints]);
 
   const deleteWaypoint = useCallback((i: number) => {
     setWaypoints(prev => prev.length > 2 ? prev.filter((_, j) => j !== i) : prev);
@@ -240,7 +238,7 @@ function BeeTrailInner() {
         <path ref={pathRef} d={pixelPath} fill="none" stroke="none" />
 
         <defs>
-          <mask id="trail-reveal">
+          <mask id={maskId}>
             <path
               ref={trailRef}
               d={pixelPath}
@@ -271,7 +269,7 @@ function BeeTrailInner() {
           strokeWidth="4"
           strokeDasharray="6 12"
           strokeLinecap="round"
-          mask="url(#trail-reveal)"
+          mask={`url(#${maskId})`}
         />
 
         {/* Draggable waypoint handles — rendered last so they're on top */}
@@ -382,14 +380,13 @@ function BeeTrailInner() {
       </svg>
 
       <div
-        className="absolute"
+        ref={beeRef}
+        className="absolute left-0 top-0"
         style={{
-          left: pos.x - BEE_SIZE / 2,
-          top: pos.y - BEE_SIZE * 0.65,
           width: BEE_SIZE,
           height: BEE_SIZE,
-          transform: `scaleX(${pos.flip ? -1 : 1})`,
-          willChange: "transform, left, top",
+          visibility: "hidden",
+          willChange: "transform",
         }}
       >
         <Image
@@ -398,7 +395,7 @@ function BeeTrailInner() {
           width={BEE_SIZE}
           height={BEE_SIZE}
           className="h-full w-full object-contain"
-          priority
+          loading="eager"
         />
       </div>
     </div>
