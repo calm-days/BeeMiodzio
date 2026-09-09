@@ -16,39 +16,42 @@ export function SiteHeader() {
   }, []);
 
   return (
-    <header className="safari-transparent-chrome pointer-events-none sticky top-0 z-40 bg-transparent h-[82px] lg:h-[152px]">
-      <nav className="container-page flex items-start justify-between py-4">
+    <header className="pointer-events-none sticky top-0 z-40 w-0 h-[82px] lg:h-[152px]">
+      {/* Keep the sticky anchor narrow so Safari does not extend it into its bars. */}
+      <div className="w-screen">
+        <nav className="container-page flex items-start justify-between py-4">
 
-        <div className="pointer-events-auto">
-          <LogoLink scrolled={scrolled} />
-        </div>
-        <div className="pointer-events-auto flex items-center gap-6 text-sm">
-          <Link
-            href="/na-prezent"
-            className={cn(
-              "font-medium transition-colors hover:opacity-80",
-              scrolled ? "text-foreground" : "text-white",
-            )}
-          >
-            Na prezent
-          </Link>
-          <Link
-            href="/dla-biznesu"
-            className={cn(
-              "font-medium transition-colors hover:opacity-80",
-              scrolled ? "text-foreground" : "text-white",
-            )}
-          >
-            Dla biznesu
-          </Link>
-          <Link
-            href="/cennik"
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-primary px-4 py-2 font-medium leading-none text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Kup ul
-          </Link>
-        </div>
-      </nav>
+          <div className="pointer-events-auto">
+            <LogoLink scrolled={scrolled} />
+          </div>
+          <div className="pointer-events-auto flex items-center gap-6 text-sm">
+            <Link
+              href="/na-prezent"
+              className={cn(
+                "font-medium transition-colors hover:opacity-80",
+                scrolled ? "text-foreground" : "text-white",
+              )}
+            >
+              Na prezent
+            </Link>
+            <Link
+              href="/dla-biznesu"
+              className={cn(
+                "font-medium transition-colors hover:opacity-80",
+                scrolled ? "text-foreground" : "text-white",
+              )}
+            >
+              Dla biznesu
+            </Link>
+            <Link
+              href="/cennik"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-primary px-4 py-2 font-medium leading-none text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Kup ul
+            </Link>
+          </div>
+        </nav>
+      </div>
     </header>
   );
 }

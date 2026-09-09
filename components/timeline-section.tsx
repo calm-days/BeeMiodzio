@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, type CSSProperties } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
 import { flags } from "@/lib/flags";
@@ -107,11 +107,10 @@ export function TimelineSection({ steps }: Props) {
   return (
     <section
       ref={containerRef}
-      style={{ height: `${travel}px` }}
-      className="relative"
+      style={{ height: `${travel}px`, "--timeline-travel": `${travel}px` } as CSSProperties}
+      className="timeline-scroll-section relative bg-primary"
     >
-      <div className="safari-transparent-chrome sticky top-0 isolate flex h-dvh flex-col overflow-hidden">
-        {/* Keep Safari's toolbar color sampler off the sticky container. */}
+      <div className="timeline-scroll-panel sticky top-0 isolate flex h-dvh flex-col overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-primary" />
         {/* Giant background text */}
         <div
