@@ -9,8 +9,8 @@ import { useHeroConfig } from "@/components/section-config";
 import { HeroWave } from "@/components/hero-wave";
 
 // Hero image natural dimensions (both bg and fg are the same size)
-const IMG_W = 2400;
-const IMG_H = 1792;
+const IMG_W = 4800;
+const IMG_H = 3584;
 const IMG_ASPECT = IMG_W / IMG_H;
 
 export function HeroConfigurator() {
@@ -59,11 +59,11 @@ export function HeroConfigurator() {
   }, []);
 
   // object-cover scales to the full image width, not the narrow visible crop.
-  const imageSizes = `(max-width: 1023px) max(100vw, calc(${config.mobileMinHeight * IMG_ASPECT}dvh + ${config.waveOverflowY * IMG_ASPECT}px)), max(100vw, calc(${config.sectionMinHeight * IMG_ASPECT}vh + ${config.waveOverflowY * IMG_ASPECT}px))`;
+  const imageSizes = `(max-width: 1023px) max(100vw, calc(${config.mobileMinHeight * IMG_ASPECT}svh + ${config.waveOverflowY * IMG_ASPECT}px)), max(100vw, calc(${config.sectionMinHeight * IMG_ASPECT}vh + ${config.waveOverflowY * IMG_ASPECT}px))`;
   // Roof edge behind the descender of the "p" in the mobile heading.
   const mobileRoofY = stage.h > 0
     ? `${stage.y + stage.h * 0.283}px`
-    : `max(21.13vw, ${config.mobileMinHeight * 0.283}dvh)`;
+    : `max(21.13vw, ${config.mobileMinHeight * 0.283}svh)`;
 
   return (
     <section
@@ -72,7 +72,7 @@ export function HeroConfigurator() {
       style={
         {
           "--hero-min-h": `${config.sectionMinHeight}vh`,
-          "--hero-mobile-h": `${config.mobileMinHeight}dvh`,
+          "--hero-mobile-h": `${config.mobileMinHeight}svh`,
         } as React.CSSProperties
       }
     >
@@ -97,7 +97,7 @@ export function HeroConfigurator() {
           fill
           className="object-cover"
           sizes={imageSizes}
-          quality={90}
+          quality={95}
           preload
         />
       </div>
@@ -121,7 +121,7 @@ export function HeroConfigurator() {
           fill
           className="object-cover"
           sizes={imageSizes}
-          quality={90}
+          quality={95}
           preload
         />
       </div>
@@ -360,7 +360,7 @@ export function HeroConfigurator() {
         <div
           className="absolute inset-x-0 z-30 flex justify-center"
           style={{
-            top: `calc(100dvh - ${config.mobilePaddingBottom}px)`,
+            top: `calc(100svh - ${config.mobilePaddingBottom}px)`,
             transform: "translateY(-100%)",
             gap: `${config.mobileButtonGap}px`,
             paddingLeft: `${config.mobilePaddingX}px`,

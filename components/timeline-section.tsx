@@ -110,7 +110,7 @@ export function TimelineSection({ steps }: Props) {
       style={{ height: `${travel}px` }}
       className="relative"
     >
-      <div className="sticky top-0 isolate flex h-dvh flex-col overflow-hidden">
+      <div className="safari-transparent-chrome sticky top-0 isolate flex h-dvh flex-col overflow-hidden">
         {/* Keep Safari's toolbar color sampler off the sticky container. */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-primary" />
         {/* Giant background text */}

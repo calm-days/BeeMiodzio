@@ -29,15 +29,9 @@ export function HeroWave({
   } | null>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
   const targetsRef = useRef(targets);
-  targetsRef.current = targets;
-
-  if (seedsRef.current === null) {
-    seedsRef.current = {
-      phase: Array.from({ length: harmonics }, () => Math.random() * Math.PI * 2),
-      freq: Array.from({ length: harmonics }, () => 0.7 + Math.random() * 0.6),
-      moff: Math.random() * 1000,
-    };
-  }
+  useEffect(() => {
+    targetsRef.current = targets;
+  }, [targets]);
 
   useEffect(() => {
     const cssClip = `url(#${id})`;
@@ -63,7 +57,15 @@ export function HeroWave({
   }, [id]);
 
   useEffect(() => {
-    if (box.w === 0 || box.h === 0 || !pathRef.current || !seedsRef.current) return;
+    if (box.w === 0 || box.h === 0 || !pathRef.current) return;
+
+    if (seedsRef.current === null) {
+      seedsRef.current = {
+        phase: Array.from({ length: harmonics }, () => Math.random() * Math.PI * 2),
+        freq: Array.from({ length: harmonics }, () => 0.7 + Math.random() * 0.6),
+        moff: Math.random() * 1000,
+      };
+    }
 
     const { phase, freq, moff } = seedsRef.current;
     const SMOOTHING = 0.2;
@@ -132,8 +134,23 @@ export function HeroWave({
       if (pathRef.current) pathRef.current.setAttribute("d", buildD(timeRef.current));
       raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    // Avoid invalidating both large image layers after the hero has left view.
+    // Keep `last` unchanged so the phase advances by elapsed time on re-entry.
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (!raf) raf = requestAnimationFrame(tick);
+      } else {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    }, { rootMargin: "100px" });
+    // Observe the unclipped section so an empty initial clip cannot hide itself.
+    const target = targetsRef.current[0]?.current?.parentElement;
+    if (target) observer.observe(target);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(raf);
+    };
   }, [box.w, box.h, height, speed, harmonics, centerOffsetY]);
 
   return (

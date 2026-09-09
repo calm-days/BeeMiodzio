@@ -1,9 +1,12 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback, useId } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { useScroll, useTransform, useMotionValueEvent } from "motion/react";
 import Image from "next/image";
 
+import { easeBeeProgress, pointAt, type SampledPath } from "@/lib/bee-path";
+import { createBeeTrailRenderer } from "@/lib/bee-trail-renderer";
+import { createBeeScrollAnimation } from "@/lib/bee-scroll-animation";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const BEE_SIZE = 64;
@@ -66,21 +69,24 @@ function catmullRomToSvg(pts: Waypoint[], w: number, h: number): string {
 }
 
 export function BeeTrail() {
-  const maskId = useId();
   const beeRef = useRef<HTMLDivElement>(null);
-  const samplesRef = useRef<Waypoint[]>([]);
+  const faceRef = useRef<HTMLDivElement>(null);
+  const trailHostRef = useRef<HTMLDivElement>(null);
+  const runtimeRef = useRef<{
+    path: SampledPath;
+    trail: ReturnType<typeof createBeeTrailRenderer>;
+    animations: Animation[];
+  } | null>(null);
   const posRef = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
-  const trailRef = useRef<SVGPathElement>(null);
 
   const isMobile = useIsMobile();
   const [mobileWaypoints, setMobileWaypoints] = useState<Waypoint[]>([...MOBILE_WAYPOINTS]);
   const waypoints = mobileWaypoints;
   const setWaypoints = setMobileWaypoints;
 
-  const [totalLength, setTotalLength] = useState(0);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
   const { scrollYProgress } = useScroll({
@@ -90,21 +96,7 @@ export function BeeTrail() {
       : ["start 80%", "end 40%"],
   });
 
-  // Ease only at the edges, linear in the middle
-  const progress = useTransform(scrollYProgress, (v) => {
-    const t = Math.max(0, Math.min(1, v));
-    const e = 0.15;
-    const total = 1 - e;
-    if (t < e) {
-      const n = t / e;
-      return (e * 0.5 * n * n) / total;
-    }
-    if (t > 1 - e) {
-      const n = (1 - t) / e;
-      return 1 - (e * 0.5 * n * n) / total;
-    }
-    return ((e * 0.5) + (t - e)) / total;
-  });
+  const progress = useTransform(scrollYProgress, easeBeeProgress);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -115,58 +107,57 @@ export function BeeTrail() {
     return () => ro.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!pathRef.current || size.w === 0) return;
-    const path = pathRef.current;
-    const length = path.getTotalLength();
-    // Sample once per geometry change, at most two CSS pixels apart.
-    const count = Math.ceil(length / 2);
-    samplesRef.current = Array.from({ length: count + 1 }, (_, i) => {
-      const point = path.getPointAtLength((i / count) * length);
-      return { x: point.x, y: point.y };
-    });
-    setTotalLength(length);
-  }, [size, isMobile, mobileWaypoints]);
-
-  const updateBee = useCallback(
-    (p: number) => {
-      const bee = beeRef.current;
-      const trail = trailRef.current;
-      const samples = samplesRef.current;
-      if (!bee || !trail || totalLength === 0 || samples.length < 2) return;
-
-      const len = p * totalLength;
-      const pointAt = (length: number) => {
-        const index = Math.max(0, Math.min(1, length / totalLength)) * (samples.length - 1);
-        const low = Math.floor(index);
-        const a = samples[low];
-        const b = samples[Math.min(low + 1, samples.length - 1)];
-        const t = index - low;
-        return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
-      };
-      const pt = pointAt(len);
-      const flip = pointAt(len + 20).x < pointAt(len - 20).x;
-      posRef.current = pt;
-      bee.style.transform = `translate3d(${pt.x - BEE_SIZE / 2}px, ${pt.y - BEE_SIZE * 0.65}px, 0) scaleX(${flip ? -1 : 1})`;
-      bee.style.visibility = "visible";
-
-      const trailGap = BEE_SIZE * 0.6;
-      const revealed = Math.max(0, len - trailGap);
-      trail.style.strokeDashoffset = String(totalLength - revealed);
-    },
-    [totalLength],
-  );
+  const updateBee = useCallback((p: number) => {
+    const runtime = runtimeRef.current;
+    const bee = beeRef.current;
+    const face = faceRef.current;
+    if (!runtime || !bee || !face) return;
+    const { path, trail, animations } = runtime;
+    const distance = p * path.length;
+    const point = pointAt(path, distance);
+    posRef.current = point;
+    if (animations.length === 0) {
+      bee.style.transform = `translate3d(${point.x - BEE_SIZE / 2}px, ${point.y - BEE_SIZE * 0.65}px, 0)`;
+      face.style.transform = `scaleX(${pointAt(path, distance + 20).x < pointAt(path, distance - 20).x ? -1 : 1})`;
+    }
+    trail.draw(distance - BEE_SIZE * 0.6);
+  }, []);
 
   useMotionValueEvent(progress, "change", updateBee);
-
-  useEffect(() => {
-    if (totalLength > 0) updateBee(progress.get());
-  }, [totalLength, updateBee, progress]);
 
   const pixelPath = size.w > 0
     ? (isMobile ? catmullRomToSvg(mobileWaypoints, size.w, size.h) : buildDesktopPath(size.w, size.h))
     : "";
   const vb = `0 0 ${size.w} ${size.h}`;
+
+  useEffect(() => {
+    const svgPath = pathRef.current;
+    const host = trailHostRef.current;
+    const container = containerRef.current;
+    const bee = beeRef.current;
+    const face = faceRef.current;
+    if (!pixelPath || !svgPath || !host || !container || !bee || !face) return;
+    const length = svgPath.getTotalLength();
+    if (length === 0) return;
+    const count = Math.ceil(length / 2);
+    const path: SampledPath = {
+      length,
+      points: Array.from({ length: count + 1 }, (_, i) => {
+        const point = svgPath.getPointAtLength((i / count) * length);
+        return { x: point.x, y: point.y };
+      }),
+    };
+    const trail = createBeeTrailRenderer(host, path);
+    const animations = createBeeScrollAnimation(container, bee, face, path, isMobile, BEE_SIZE);
+    runtimeRef.current = { path, trail, animations };
+    bee.style.visibility = "visible";
+    updateBee(progress.get());
+    return () => {
+      animations.forEach(animation => animation.cancel());
+      trail.destroy();
+      runtimeRef.current = null;
+    };
+  }, [pixelPath, isMobile, progress, updateBee]);
 
   const copyWaypoints = useCallback(() => {
     const str = waypoints.map(wp => `{ x: ${wp.x}, y: ${wp.y} }`).join(",\n  ");
@@ -227,6 +218,7 @@ export function BeeTrail() {
         </div>
       )}
 
+      <div ref={trailHostRef} aria-hidden="true" className="absolute inset-0 text-indigo-700/40" />
       <svg
         ref={svgRef}
         className="absolute inset-0 h-full w-full"
@@ -237,20 +229,6 @@ export function BeeTrail() {
       >
         <path ref={pathRef} d={pixelPath} fill="none" stroke="none" />
 
-        <defs>
-          <mask id={maskId}>
-            <path
-              ref={trailRef}
-              d={pixelPath}
-              fill="none"
-              stroke="white"
-              strokeWidth="20"
-              strokeDasharray={totalLength || 1}
-              strokeDashoffset={totalLength || 1}
-            />
-          </mask>
-        </defs>
-
         {DEBUG && (
           <path
             d={pixelPath}
@@ -260,17 +238,6 @@ export function BeeTrail() {
             strokeDasharray="6 4"
           />
         )}
-
-        <path
-          d={pixelPath}
-          fill="none"
-          stroke="currentColor"
-          className="text-indigo-700/40"
-          strokeWidth="4"
-          strokeDasharray="6 12"
-          strokeLinecap="round"
-          mask={`url(#${maskId})`}
-        />
 
         {/* Draggable waypoint handles — rendered last so they're on top */}
         {DEBUG && size.w > 0 && waypoints.map((wp, i) => {
@@ -389,14 +356,16 @@ export function BeeTrail() {
           willChange: "transform",
         }}
       >
-        <Image
-          src="/bee.webp"
-          alt=""
-          width={BEE_SIZE}
-          height={BEE_SIZE}
-          className="h-full w-full object-contain"
-          loading="eager"
-        />
+        <div ref={faceRef} className="h-full w-full">
+          <Image
+            src="/bee.webp"
+            alt=""
+            width={BEE_SIZE}
+            height={BEE_SIZE}
+            className="h-full w-full object-contain"
+            loading="eager"
+          />
+        </div>
       </div>
     </div>
   );

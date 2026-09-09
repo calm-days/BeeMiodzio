@@ -16,7 +16,7 @@ export function SiteHeader() {
   }, []);
 
   return (
-    <header className="pointer-events-none sticky top-0 z-40 bg-transparent h-[82px] lg:h-[152px]">
+    <header className="safari-transparent-chrome pointer-events-none sticky top-0 z-40 bg-transparent h-[82px] lg:h-[152px]">
       <nav className="container-page flex items-start justify-between py-4">
 
         <div className="pointer-events-auto">

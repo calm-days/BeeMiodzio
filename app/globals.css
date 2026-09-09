@@ -189,3 +189,14 @@
   90%  { opacity: 0; transform: rotate(22deg) translate(80px, 5px); }
   100% { opacity: 0; transform: rotate(10deg) translate(30px, 15px); }
 }
+
+/* Safari 26 caches the sampled color of transparent sticky containers.
+   A backdrop filter tells WebKit that the content beneath can change. The
+   identity filter leaves the pixels unchanged and must be on the container
+   itself; WebKit ignores pseudo-elements when choosing the toolbar color. */
+@supports (-webkit-touch-callout: none) {
+  .safari-transparent-chrome {
+    -webkit-backdrop-filter: opacity(1);
+    backdrop-filter: opacity(1);
+  }
+}

@@ -37,7 +37,7 @@ export interface HeroConfig {
 
   // Mobile overrides
   mobileLogoHeight: number;
-  mobileMinHeight: number;        // dvh — section min-height on mobile
+  mobileMinHeight: number;        // svh — section min-height on mobile
   mobileHeadingSize: number;
   mobileHeadingLineHeight: number;
   mobileSubheadingSize: number;
